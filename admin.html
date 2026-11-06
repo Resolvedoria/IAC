@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>IAC · Painel do mentor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 34 34" width="26" height="26" aria-hidden="true"><rect x="1" y="4" width="32" height="5" rx="2.5" fill="#F4F6F5"/><rect x="5" y="11.5" width="24" height="5" rx="2.5" fill="#F4F6F5"/><rect x="9" y="19" width="16" height="5" rx="2.5" fill="#E09A12"/><rect x="13" y="26.5" width="8" height="5" rx="2.5" fill="#F4F6F5"/></svg>
+      <span>Resolvedoria <small>· Painel do mentor</small></span>
+    </div>
+    <div class="hero">
+      <div>
+        <h1>Índice de Autonomia Comercial</h1>
+        <p id="sub">Respostas por empresa, validação e evolução entre a avaliação inicial e a final.</p>
+      </div>
+      <div class="score" aria-live="polite" id="scorebox" hidden>
+        <div class="pct" id="pct">–</div>
+        <div class="band" id="band"></div>
+        <div class="sub" id="pts"></div>
+      </div>
+    </div>
+    <div id="meterbox" hidden>
+      <div class="meter" id="meter"><div></div><div></div><div></div><div></div><div></div></div>
+      <div class="meterlbl"><span>0–20</span><span>21–40</span><span>41–60</span><span>61–80</span><span>81–100</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <form class="login" id="login" hidden>
+    <h2>Entrar</h2>
+    <div class="field" style="display:grid;gap:4px"><label for="lemail">E-mail</label><input type="email" id="lemail" autocomplete="username" required></div>
+    <div class="field" style="display:grid;gap:4px"><label for="lsenha">Senha</label><input type="password" id="lsenha" autocomplete="current-password" required></div>
+    <button class="btn" type="submit">Entrar</button>
+    <div class="notice" id="lnotice"></div>
+  </form>
+
+  <div id="painel" hidden>
+    <div class="bar">
+      <div class="field"><label for="emp">Empresa</label><select id="emp"></select></div>
+      <div class="field"><button class="btn ghost" id="reload" type="button">Atualizar</button><button class="btn ghost" id="sair" type="button">Sair</button></div>
+    </div>
+    <div class="notice" id="notice"></div>
+    <main>
+      <section class="result" aria-labelledby="rt">
+        <h2 id="rt">Resultado por dimensão</h2>
+        <div class="key"><span><i style="background:var(--verde)"></i>Avaliação inicial</span><span><i style="background:var(--petroleo)"></i>Avaliação final</span><span>Usa o envio mais recente de cada momento e a nota validada quando existe.</span></div>
+        <div class="tablebox"><table>
+          <thead><tr><th>Dimensão</th><th>Inicial</th><th>Final</th><th>Evolução</th><th style="min-width:140px"></th></tr></thead>
+          <tbody id="rbody"></tbody>
+        </table></div>
+      </section>
+      <section class="result" aria-labelledby="et">
+        <h2 id="et">Envios</h2>
+        <div class="envios" id="envios"></div>
+      </section>
+      <section id="detalhe" style="display:grid;gap:28px"></section>
+      <div class="actions" id="acts" hidden>
+        <span class="st" id="status"></span>
+        <button class="btn" id="save" type="button">Salvar validação</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="iac.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const sb = getClient();
+const st = {rows: [], vals: {}, empresas: [], emp: null, sel: null, draft: {}, open: {}, dirty: false};
+const normEmp = s => (s || "").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
+
+function note(msg, err) { $("notice").textContent = msg || ""; $("notice").className = "notice" + (err ? " err" : ""); }
+
+async function boot() {
+  if (!sb) { $("login").hidden = false; $("lnotice").textContent = "Configure o config.js com a URL e a chave do Supabase."; return; }
+  const {data} = await sb.auth.getSession();
+  if (data.session) { showPainel(); } else { $("login").hidden = false; }
+}
+$("login").onsubmit = async e => {
+  e.preventDefault();
+  $("lnotice").textContent = "Entrando…";
+  const {error} = await sb.auth.signInWithPassword({email: $("lemail").value.trim(), password: $("lsenha").value});
+  if (error) { $("lnotice").textContent = "E-mail ou senha incorretos."; return; }
+  $("lsenha").value = ""; $("login").hidden = true; showPainel();
+};
+$("sair").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+$("reload").onclick = () => load(true);
+
+async function showPainel() { $("painel").hidden = false; await load(false); }
+
+async function load(keep) {
+  note("Carregando…");
+  let r, v;
+  try { [r, v] = await Promise.all([
+    sb.from("iac_respostas").select("id, criado_em, empresa, email, momento, respostas, pontos").order("criado_em", {ascending: false}),
+    sb.from("iac_validacoes").select("resposta_id, notas, atualizado_em")
+  ]); } catch (err) { note("Sem conexão com o banco de dados. Tente de novo.", true); return; }
+  if (r.error || v.error) { note("Não foi possível carregar as respostas. Confira se você entrou com o e-mail de administrador.", true); return; }
+  st.rows = r.data; st.vals = Object.fromEntries(v.data.map(x => [x.resposta_id, x]));
+  const map = new Map();
+  for (const row of st.rows) { const k = normEmp(row.empresa); if (!map.has(k)) map.set(k, {key: k, nome: row.empresa.trim().replace(/\s+/g, " "), ult: row.criado_em, n: 0}); map.get(k).n++; }
+  st.empresas = [...map.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
+  if (!st.empresas.length) { $("emp").innerHTML = `<option>Nenhum envio ainda</option>`; note("Nenhuma resposta recebida ainda."); renderEmpresa(); return; }
+  if (!keep || !st.empresas.find(x => x.key === st.emp)) st.emp = st.empresas[0].key;
+  $("emp").innerHTML = st.empresas.map(x => `<option value="${escapeHtml(x.key)}" ${x.key === st.emp ? "selected" : ""}>${escapeHtml(x.nome)} (${x.n})</option>`).join("");
+  note("");
+  if (!keep || !st.rows.find(x => x.id === st.sel)) st.sel = null;
+  renderEmpresa();
+}
+$("emp").onchange = () => { if (st.dirty && !confirm("Há alterações de validação não salvas. Descartar?")) { $("emp").value = st.emp; return; } st.emp = $("emp").value; st.sel = null; renderEmpresa(); };
+
+function rowsEmp() { return st.rows.filter(x => normEmp(x.empresa) === st.emp); }
+function effective(row) {
+  if (!row) return null;
+  const v = st.vals[row.id] && st.vals[row.id].notas;
+  const out = {}; for (const k of KEYS) out[k] = v && v[k] && typeof v[k].nota === "number" ? v[k] : row.respostas[k]; return out;
+}
+function latest(m) { return rowsEmp().find(x => x.momento === m) || null; }
+
+function renderEmpresa() {
+  const rs = rowsEmp();
+  if (!st.sel && rs.length) st.sel = rs[0].id;
+  renderResult(); renderEnvios(); loadSel(); renderDetalhe();
+}
+
+function renderResult() {
+  const ei = effective(latest("inicial")), ef = effective(latest("final"));
+  let rows = "";
+  for (const d of DIMS) {
+    const a = ei ? dimScore(ei, d) : null, f = ef ? dimScore(ef, d) : null;
+    const pa = a === null ? null : a * 5, pf = f === null ? null : f * 5, ev = pa !== null && pf !== null ? pf - pa : null;
+    rows += `<tr><td>${d.nome}</td><td class="n">${pa === null ? "–" : pa + "%"}</td><td class="n">${pf === null ? "–" : pf + "%"}</td><td class="n ${ev > 0 ? "up" : ""}">${ev === null ? "–" : (ev > 0 ? "+" : "") + ev + " p.p."}</td><td><div class="mini"><i style="width:${pa || 0}%"></i><i class="f" style="width:${pf || 0}%"></i></div></td></tr>`;
+  }
+  const ti = ei ? sumOf(ei).s : null, tf = ef ? sumOf(ef).s : null;
+  rows += `<tr><td><strong>IAC</strong></td><td class="n"><strong>${ti === null ? "–" : ti + "%"}</strong></td><td class="n"><strong>${tf === null ? "–" : tf + "%"}</strong></td><td class="n ${tf - ti > 0 ? "up" : ""}">${ti !== null && tf !== null ? ((tf - ti > 0 ? "+" : "") + (tf - ti) + " p.p.") : "–"}</td><td style="font-size:13px;color:var(--fg-2)">${ti !== null ? band(ti).nome : ""}${tf !== null ? " → " + band(tf).nome : ""}</td></tr>`;
+  $("rbody").innerHTML = rows;
+}
+
+function renderEnvios() {
+  $("envios").innerHTML = rowsEmp().map(x => {
+    const val = st.vals[x.id], s = sumOf(effective(x)).s;
+    return `<button type="button" class="envio" data-id="${x.id}" aria-pressed="${x.id === st.sel}"><span>${MOMENTOS[x.momento] || x.momento}</span><span class="m">${fmtDate(x.criado_em)}</span><span>${escapeHtml(x.email)}</span><span class="m">${s}%${val && s !== x.pontos ? ` (declarado ${x.pontos}%)` : ""}</span><span class="tag ${val ? "ok" : ""}">${val ? "Validado" : "A validar"}</span></button>`;
+  }).join("") || `<p style="margin:0;color:var(--fg-2)">Nenhum envio.</p>`;
+}
+
+function loadSel() {
+  const row = st.rows.find(x => x.id === st.sel);
+  st.open = {}; st.dirty = false;
+  if (!row) { st.draft = {}; return; }
+  const v = st.vals[row.id] && st.vals[row.id].notas;
+  st.draft = v ? JSON.parse(JSON.stringify(v)) : Object.fromEntries(KEYS.map(k => [k, {nota: row.respostas[k] && row.respostas[k].nota, obs: ""}]));
+}
+
+function renderDetalhe() {
+  const row = st.rows.find(x => x.id === st.sel);
+  $("acts").hidden = !row; $("scorebox").hidden = !row; $("meterbox").hidden = !row;
+  if (!row) { $("detalhe").innerHTML = ""; return; }
+  let html = "", n = 0;
+  for (const d of DIMS) {
+    const ds = dimScore(st.draft, d);
+    html += `<section class="dim"><div class="dimhead"><h2>${d.nome}</h2><span>${ds === null ? "–" : ds} / 20</span></div>`;
+    d.c.forEach((cr, i) => {
+      n++;
+      const k = d.id + "_" + (i + 1), decl = row.respostas[k] || {}, cur = st.draft[k] || {};
+      const hasD = typeof decl.nota === "number", chg = typeof cur.nota === "number" && cur.nota !== decl.nota;
+      html += `<div class="crit"><div class="q"><b>${String(n).padStart(2, "0")}</b><span>${escapeHtml(cr.t)}</span></div>`;
+      html += `<div class="declared"><span>Resposta do líder comercial${hasD ? " · nota " + decl.nota : ""}</span><div class="opt">${hasD ? escapeHtml(cr.o[decl.nota]) : "Sem resposta."}</div>${decl.evidencia ? `<div class="evd">Evidência: ${escapeHtml(decl.evidencia)}</div>` : ""}${chg ? `<div class="chg">Nota validada: ${cur.nota} · ${escapeHtml(cr.o[cur.nota])}</div>` : ""}</div>`;
+      html += `<button type="button" class="linkbtn" data-open="${k}">${st.open[k] ? "Fechar opções" : "Alterar nota"}</button>`;
+      if (st.open[k]) {
+        html += `<div class="scale" role="group" aria-label="Nota validada do critério ${n}">`;
+        for (let s = 0; s <= 5; s++) html += `<button type="button" data-k="${k}" data-s="${s}" aria-pressed="${cur.nota === s}" class="${decl.nota === s && cur.nota !== s ? "decl" : ""}"><strong>${s}</strong><span>${escapeHtml(cr.o[s])}</span></button>`;
+        html += `</div>`;
+      }
+      html += `<div class="ev"><label for="t-${k}">Observação da validação</label><textarea id="t-${k}" data-k="${k}" placeholder="O que foi visto e o que falta">${escapeHtml(cur.obs || "")}</textarea></div></div>`;
+    });
+    html += `</section>`;
+  }
+  $("detalhe").innerHTML = html;
+  renderScore(row);
+}
+function renderScore(row) {
+  const {s, n} = sumOf(st.draft);
+  const b = renderMeter($("meter"), s, n);
+  $("pct").textContent = s + "%"; $("band").textContent = b.nome;
+  $("pts").textContent = `${MOMENTOS[row.momento] || row.momento} · declarado ${row.pontos}%`;
+  const v = st.vals[row.id];
+  $("status").textContent = (v ? `Validação salva em ${fmtDate(v.atualizado_em)}.` : "Ainda não validado.") + (st.dirty ? " Há alterações não salvas." : "");
+}
+
+document.addEventListener("click", e => {
+  const env = e.target.closest(".envio");
+  if (env) { if (st.dirty && !confirm("Há alterações de validação não salvas. Descartar?")) return; st.sel = env.dataset.id; renderEnvios(); loadSel(); renderDetalhe(); return; }
+  const o = e.target.closest("[data-open]");
+  if (o) { const y = window.scrollY; st.open[o.dataset.open] = !st.open[o.dataset.open]; renderDetalhe(); window.scrollTo(0, y); return; }
+  const b = e.target.closest(".scale button");
+  if (b) { st.draft[b.dataset.k] = Object.assign({}, st.draft[b.dataset.k], {nota: +b.dataset.s}); st.dirty = true; const y = window.scrollY; renderDetalhe(); window.scrollTo(0, y); }
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.matches("#detalhe textarea[data-k]")) { st.draft[t.dataset.k] = Object.assign({}, st.draft[t.dataset.k], {obs: t.value}); st.dirty = true; renderScore(st.rows.find(x => x.id === st.sel)); }
+});
+$("save").onclick = async () => {
+  const row = st.rows.find(x => x.id === st.sel); if (!row) return;
+  $("save").disabled = true; $("status").textContent = "Salvando…";
+  const atualizado_em = new Date().toISOString();
+  let error = null;
+  try { ({error} = await sb.from("iac_validacoes").upsert({resposta_id: row.id, notas: st.draft, atualizado_em})); } catch (err) { error = err; }
+  $("save").disabled = false;
+  if (error) { note("Não foi possível salvar a validação. Tente de novo.", true); renderScore(row); return; }
+  st.vals[row.id] = {resposta_id: row.id, notas: JSON.parse(JSON.stringify(st.draft)), atualizado_em};
+  st.dirty = false; note(""); renderResult(); renderEnvios(); renderScore(row);
+};
+window.addEventListener("beforeunload", e => { if (st.dirty) { e.preventDefault(); e.returnValue = ""; } });
+boot();
+</script>
+</body>
+</html>

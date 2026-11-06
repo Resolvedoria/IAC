@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Índice de Autonomia Comercial · Resolvedoria</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg viewBox="0 0 34 34" width="26" height="26" aria-hidden="true"><rect x="1" y="4" width="32" height="5" rx="2.5" fill="#F4F6F5"/><rect x="5" y="11.5" width="24" height="5" rx="2.5" fill="#F4F6F5"/><rect x="9" y="19" width="16" height="5" rx="2.5" fill="#E09A12"/><rect x="13" y="26.5" width="8" height="5" rx="2.5" fill="#F4F6F5"/></svg>
+      <span>Resolvedoria <small>· Método Autonomia Comercial</small></span>
+    </div>
+    <div class="hero">
+      <div>
+        <h1>Índice de Autonomia Comercial</h1>
+        <p>Vinte critérios em cinco dimensões, de 0 a 5. Quem responde é o líder comercial: a pessoa de quem a operação comercial depende hoje (fundador, sócio ou diretor).</p>
+      </div>
+      <div class="score" aria-live="polite">
+        <div class="pct" id="pct">0%</div>
+        <div class="band" id="band">Totalmente dependente</div>
+        <div class="sub" id="pts">0 de 100 pontos</div>
+      </div>
+    </div>
+    <div>
+      <div class="meter" id="meter"><div></div><div></div><div></div><div></div><div></div></div>
+      <div class="meterlbl"><span>0–20</span><span>21–40</span><span>41–60</span><span>61–80</span><span>81–100</span></div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap" id="app">
+  <div class="form-grid">
+    <div class="field"><label for="empresa">Empresa</label><input type="text" id="empresa" autocomplete="organization" placeholder="Nome da empresa"></div>
+    <div class="field"><label for="email">Seu e-mail</label><input type="email" id="email" autocomplete="email" placeholder="voce@empresa.com.br"></div>
+    <div class="field"><label for="momento">Momento</label><select id="momento"><option value="inicial">Avaliação inicial</option><option value="final">Avaliação final</option></select></div>
+  </div>
+  <div class="notice" id="notice"></div>
+
+  <main>
+    <section class="legend" aria-labelledby="lg">
+      <h2 id="lg">Como responder</h2>
+      <ol id="legend"></ol>
+      <p>Cada critério tem seis opções próprias. Escolha a que descreve melhor o que acontece hoje, não o que está planejado. Ao marcar nota 3, 4 ou 5, aparece um campo para descrever a evidência: um print, um documento, uma planilha ou um ritual que acontece de fato.</p>
+    </section>
+    <div id="dims" style="display:grid;gap:28px"></div>
+    <div class="actions">
+      <span class="st" id="status">0 de 20 respondidos.</span>
+      <button class="btn" id="send">Enviar respostas</button>
+    </div>
+  </main>
+</div>
+
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="iac.js"></script>
+<script>
+const DRAFT_KEY = "iac-rascunho-v1";
+let respostas = {};
+let confirmEv = false;
+const $ = id => document.getElementById(id);
+const sb = getClient();
+
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({empresa: $("empresa").value, email: $("email").value, momento: $("momento").value, respostas})); } catch (e) {}
+}
+function loadDraftLocal() {
+  try {
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (d) { $("empresa").value = d.empresa || ""; $("email").value = d.email || ""; $("momento").value = d.momento || "inicial"; respostas = d.respostas || {}; }
+  } catch (e) {}
+}
+
+function renderDims() {
+  let html = "", n = 0;
+  for (const d of DIMS) {
+    const ds = dimScore(respostas, d);
+    html += `<section class="dim" aria-labelledby="h-${d.id}"><div class="dimhead"><h2 id="h-${d.id}">${d.nome}</h2><span>${ds === null ? "–" : ds} / 20</span></div>`;
+    d.c.forEach((cr, i) => {
+      n++;
+      const k = d.id + "_" + (i + 1), cur = respostas[k] || {};
+      html += `<div class="crit" id="c-${k}"><div class="q"><b>${String(n).padStart(2, "0")}</b><span>${escapeHtml(cr.t)}</span></div><div class="scale" role="group" aria-label="Nota do critério ${n}">`;
+      for (let s = 0; s <= 5; s++) html += `<button type="button" data-k="${k}" data-s="${s}" aria-pressed="${cur.nota === s}"><strong>${s}</strong><span>${escapeHtml(cr.o[s])}</span></button>`;
+      html += `</div>`;
+      if (typeof cur.nota === "number" && cur.nota >= 3) {
+        const need = !(cur.evidencia || "").trim();
+        html += `<div class="ev"><label for="t-${k}">Evidência</label><textarea id="t-${k}" data-k="${k}" placeholder="Onde isso pode ser visto (print, documento, ritual)">${escapeHtml(cur.evidencia || "")}</textarea>${need ? `<span class="req">Nota ${cur.nota} pede evidência.</span>` : ""}</div>`;
+      }
+      html += `</div>`;
+    });
+    html += `</section>`;
+  }
+  $("dims").innerHTML = html;
+}
+function renderScore() {
+  const {s, n} = sumOf(respostas);
+  const b = renderMeter($("meter"), s, n);
+  $("pct").textContent = s + "%";
+  $("band").textContent = (n < 20 ? "Parcial · " : "") + b.nome;
+  $("pts").textContent = `${s} de 100 pontos · ${n} de 20 respondidos`;
+  $("status").textContent = n < 20 ? `${n} de 20 respondidos.` : "Tudo respondido. Confira e envie.";
+}
+function note(msg, err) { $("notice").textContent = msg || ""; $("notice").className = "notice" + (err ? " err" : ""); }
+
+document.addEventListener("click", e => {
+  const b = e.target.closest(".scale button");
+  if (!b) return;
+  const k = b.dataset.k;
+  respostas[k] = Object.assign({}, respostas[k], {nota: +b.dataset.s});
+  if (respostas[k].nota < 3) delete respostas[k].evidencia;
+  confirmEv = false;
+  const y = window.scrollY; renderDims(); renderScore(); window.scrollTo(0, y); saveDraft();
+});
+document.addEventListener("input", e => {
+  const t = e.target;
+  if (t.matches("textarea[data-k]")) {
+    respostas[t.dataset.k] = Object.assign({}, respostas[t.dataset.k], {evidencia: t.value});
+    const req = t.parentElement.querySelector(".req"); if (req && t.value.trim()) req.remove();
+    confirmEv = false;
+  }
+  saveDraft();
+});
+$("momento").addEventListener("change", saveDraft);
+
+$("send").onclick = async () => {
+  const empresa = $("empresa").value.trim(), email = $("email").value.trim();
+  if (!empresa) { note("Preencha o nome da empresa.", true); $("empresa").focus(); return; }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { note("Preencha um e-mail válido.", true); $("email").focus(); return; }
+  const falta = KEYS.filter(k => !(respostas[k] && typeof respostas[k].nota === "number"));
+  if (falta.length) { note(`Faltam ${falta.length} critério(s) sem resposta.`, true); document.getElementById("c-" + falta[0]).scrollIntoView({behavior: "smooth", block: "center"}); return; }
+  const semEv = KEYS.filter(k => respostas[k].nota >= 3 && !(respostas[k].evidencia || "").trim());
+  if (semEv.length && !confirmEv) { confirmEv = true; note(`${semEv.length} critério(s) com nota 3 ou mais estão sem evidência. Complete, ou clique em Enviar de novo para mandar assim mesmo.`, true); return; }
+  if (!sb) { note("O formulário ainda não está conectado ao banco de dados. Avise a Resolvedoria.", true); return; }
+  $("send").disabled = true; $("status").textContent = "Enviando…";
+  const pontos = sumOf(respostas).s;
+  let error = null;
+  try { ({error} = await sb.from("iac_respostas").insert({empresa, email, momento: $("momento").value, respostas, pontos})); } catch (err) { error = err; }
+  if (error) { $("send").disabled = false; renderScore(); note("Não foi possível enviar agora. Confira a conexão e tente de novo.", true); return; }
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  const b = band(pontos);
+  $("app").innerHTML = `<main><div class="done"><span class="tag ok">Respostas enviadas</span><div class="big">${pontos}%</div><h2>${escapeHtml(b.nome)}</h2><p>Obrigado. As notas e as evidências serão revisadas com você no encontro da mentoria, uma a uma.</p></div></main>`;
+  window.scrollTo(0, 0);
+};
+
+$("legend").innerHTML = legendHtml();
+loadDraftLocal(); renderDims(); renderScore();
+if (!sb) note("Modo de demonstração: o banco de dados ainda não foi configurado, e as respostas não serão enviadas.");
+</script>
+</body>
+</html>
