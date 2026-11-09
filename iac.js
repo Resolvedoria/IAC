@@ -251,20 +251,46 @@ const DIMS = [
  }
 ];
 
+
 const KEYS = DIMS.flatMap(d => d.c.map((_, i) => d.id + "_" + (i + 1)));
 const BANDS = [[20,"Totalmente dependente"],[40,"Alta dependência"],[60,"Dependência condicionada"],[80,"Autonomia condicionada"],[100,"Autonomia alta"]];
-const LEGEND = [["0–2","Não está estruturado"],["3","Está escrito e é praticado"],["4","Funciona sem cobrança"],["5","O time melhora sozinho"]];
 const MOMENTOS = {inicial: "Avaliação inicial", final: "Avaliação final"};
+const LINKEDIN = "https://www.linkedin.com/in/joaomateusdarosa/";
 
-function band(p) { for (let i = 0; i < BANDS.length; i++) if (p <= BANDS[i][0]) return {nome: BANDS[i][1], idx: i}; return {nome: BANDS[4][1], idx: 4}; }
+function bandIdx(p) { for (let i = 0; i < BANDS.length; i++) if (p <= BANDS[i][0]) return i; return 4; }
+function band(p) { const i = bandIdx(p); return {nome: BANDS[i][1], idx: i}; }
 function sumOf(map) { let s = 0, n = 0; for (const k of KEYS) { const v = map && map[k] && map[k].nota; if (typeof v === "number") { s += v; n++; } } return {s, n}; }
 function dimScore(map, d) { let s = 0, n = 0; d.c.forEach((_, i) => { const v = map && map[d.id + "_" + (i + 1)] && map[d.id + "_" + (i + 1)].nota; if (typeof v === "number") { s += v; n++; } }); return n ? s : null; }
+function dimCount(map, d) { return d.c.filter((_, i) => map && map[d.id + "_" + (i + 1)] && typeof map[d.id + "_" + (i + 1)].nota === "number").length; }
 function escapeHtml(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 function fmtDate(s) { try { return new Date(s).toLocaleString("pt-BR", {dateStyle: "short", timeStyle: "short"}); } catch (e) { return s; } }
-function renderMeter(el, pct, n) { const b = band(pct); [...el.children].forEach((x, i) => { x.className = (n > 0 && i <= b.idx ? "on" : "") + (n > 0 && i === b.idx ? " cur" : ""); }); return b; }
-function legendHtml() { return LEGEND.map(([n, t]) => `<li><b>${n}</b><span>${t}</span></li>`).join(""); }
+function fmtDia(s) { try { return new Date(s).toLocaleDateString("pt-BR"); } catch (e) { return s; } }
+function paintRegua(el, pts, has) { const i = bandIdx(pts); [...el.children].forEach((x, j) => { x.className = (has && j <= i ? "on" : "") + (has && j === i ? " cur" : ""); }); }
+function logoSvg(size, cor) { cor = cor || "currentColor"; return `<svg viewBox="0 0 34 34" width="${size}" height="${size}" aria-hidden="true"><rect x="1" y="4" width="32" height="5" rx="2.5" fill="${cor}"/><rect x="5" y="11.5" width="24" height="5" rx="2.5" fill="${cor}"/><rect x="9" y="19" width="16" height="5" rx="2.5" fill="#E09A12"/><rect x="13" y="26.5" width="8" height="5" rx="2.5" fill="${cor}"/></svg>`; }
 function getClient() {
   const c = window.IAC_CONFIG || {};
   if (!c.SUPABASE_URL || c.SUPABASE_URL.includes("COLE_AQUI") || !window.supabase) return null;
   return window.supabase.createClient(c.SUPABASE_URL, c.SUPABASE_ANON_KEY);
 }
+
+/* Folha para PDF: recebe {empresa, email, momento, data, respostas} e devolve o HTML da folha A4. */
+function folhaHtml(o) {
+  const s = sumOf(o.respostas).s, i = bandIdx(s);
+  const regua = [0,1,2,3,4].map(j => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+  const dims = DIMS.map(d => `<tr><td>${d.nome}</td><td class="n">${dimScore(o.respostas, d) ?? "–"}/20</td></tr>`).join("");
+  let n = 0;
+  const resp = DIMS.map(d => `<section><h2>${d.nome}</h2><table>${d.c.map((cr, j) => { n++; const v = o.respostas[d.id + "_" + (j + 1)] || {}; const ev = (v.evidencia || "").trim(); return `<tr><td class="n">${n}</td><td><strong>${escapeHtml(cr.t)}</strong><p class="ev"><em>Nota ${v.nota}: ${escapeHtml(cr.o[v.nota])}</em></p>${ev ? `<p class="prova">Comprovação: ${escapeHtml(ev)}</p>` : ""}${o.obs && o.obs[d.id + "_" + (j + 1)] ? `<p class="prova">Validação: ${escapeHtml(o.obs[d.id + "_" + (j + 1)])}</p>` : ""}</td></tr>`; }).join("")}</table></section>`).join("");
+  return `<article class="folha"><header><div class="logo">${logoSvg(40, "#123A40")}<div><strong>Resolvedoria</strong><span>Índice de Autonomia Comercial</span></div></div><div class="meta"><b>${escapeHtml(o.empresa)}</b>${escapeHtml(o.email)}<br>${escapeHtml(MOMENTOS[o.momento] || o.momento)}, ${escapeHtml(o.data)}</div></header>
+  <section class="res"><div><small>Faixa</small><h1>${BANDS[i][1]}</h1><div class="regua" style="margin-top:14px">${regua}</div><div class="regua-lbl"><span>0</span><span>21</span><span>41</span><span>61</span><span>81</span></div></div><div class="pts">${s}<br><span>de 100 pontos</span></div></section>
+  <section><h2>Por dimensão</h2><table><tr><th>Dimensão</th><th>Pontos</th></tr>${dims}</table></section>
+  ${resp}
+  <footer><span>Resolvedoria, destravamento comercial</span><span>linkedin.com/in/joaomateusdarosa</span></footer></article>`;
+}
+function abrirCamada(html) { fecharCamada(); const d = document.createElement("div"); d.className = "camada"; d.innerHTML = html; document.body.appendChild(d); d.addEventListener("click", e => { if (e.target === d) fecharCamada(); }); return d; }
+function fecharCamada() { const c = document.querySelector(".camada"); if (c) c.remove(); }
+function imprimirFolha(o) {
+  abrirCamada(`<div class="folha-wrap"><div class="folha-top"><span>Na janela que vai abrir, escolha "Salvar como PDF".</span><button class="btn claro pequeno" type="button" data-fechar style="color:#fff;border-color:rgba(255,255,255,.5)">Fechar</button></div>${folhaHtml(o)}</div>`);
+  setTimeout(() => window.print(), 150);
+}
+document.addEventListener("click", e => { if (e.target.closest("[data-fechar]")) fecharCamada(); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") fecharCamada(); });

@@ -4,70 +4,70 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="robots" content="noindex">
-<title>IAC · Painel do mentor</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<title>Painel do mentor · IAC</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <link rel="stylesheet" href="estilo.css">
 </head>
 <body>
-<header class="top">
-  <div class="wrap">
-    <div class="brand">
-      <svg viewBox="0 0 34 34" width="26" height="26" aria-hidden="true"><rect x="1" y="4" width="32" height="5" rx="2.5" fill="#F4F6F5"/><rect x="5" y="11.5" width="24" height="5" rx="2.5" fill="#F4F6F5"/><rect x="9" y="19" width="16" height="5" rx="2.5" fill="#E09A12"/><rect x="13" y="26.5" width="8" height="5" rx="2.5" fill="#F4F6F5"/></svg>
-      <span>Resolvedoria <small>· Painel do mentor</small></span>
-    </div>
-    <div class="hero">
-      <div>
-        <h1>Índice de Autonomia Comercial</h1>
-        <p id="sub">Respostas por empresa, validação e evolução entre a avaliação inicial e a final.</p>
-      </div>
-      <div class="score" aria-live="polite" id="scorebox" hidden>
-        <div class="pct" id="pct">–</div>
-        <div class="band" id="band"></div>
-        <div class="sub" id="pts"></div>
-      </div>
-    </div>
-    <div id="meterbox" hidden>
-      <div class="meter" id="meter"><div></div><div></div><div></div><div></div><div></div></div>
-      <div class="meterlbl"><span>0–20</span><span>21–40</span><span>41–60</span><span>61–80</span><span>81–100</span></div>
-    </div>
-  </div>
-</header>
 
-<div class="wrap">
-  <form class="login" id="login" hidden>
-    <h2>Entrar</h2>
-    <div class="field" style="display:grid;gap:4px"><label for="lemail">E-mail</label><input type="email" id="lemail" autocomplete="username" required></div>
-    <div class="field" style="display:grid;gap:4px"><label for="lsenha">Senha</label><input type="password" id="lsenha" autocomplete="current-password" required></div>
-    <button class="btn" type="submit">Entrar</button>
-    <div class="notice" id="lnotice"></div>
-  </form>
+<form class="entrar" id="login" hidden>
+  <div class="logo-entrar" id="logo-l"></div>
+  <h1>Painel do mentor</h1>
+  <div class="campo"><label for="lemail">E-mail</label><input type="email" id="lemail" autocomplete="username" required></div>
+  <div class="campo"><label for="lsenha">Senha</label><input type="password" id="lsenha" autocomplete="current-password" required></div>
+  <button class="btn" type="submit">Entrar</button>
+  <div class="msg" id="lmsg"></div>
+</form>
 
-  <div id="painel" hidden>
-    <div class="bar">
-      <div class="field"><label for="emp">Empresa</label><select id="emp"></select></div>
-      <div class="field"><button class="btn ghost" id="reload" type="button">Atualizar</button><button class="btn ghost" id="sair" type="button">Sair</button></div>
+<div class="shell painel" id="painel" hidden>
+  <aside class="rail" aria-label="Empresas e envios">
+    <div class="marca">
+      <span id="logo"></span>
+      <strong>Resolvedoria</strong>
+      <span style="font-size:14px;color:var(--rail-2)">Painel do mentor</span>
     </div>
-    <div class="notice" id="notice"></div>
-    <main>
-      <section class="result" aria-labelledby="rt">
-        <h2 id="rt">Resultado por dimensão</h2>
-        <div class="key"><span><i style="background:var(--verde)"></i>Avaliação inicial</span><span><i style="background:var(--petroleo)"></i>Avaliação final</span><span>Usa o envio mais recente de cada momento e a nota validada quando existe.</span></div>
-        <div class="tablebox"><table>
-          <thead><tr><th>Dimensão</th><th>Inicial</th><th>Final</th><th>Evolução</th><th style="min-width:140px"></th></tr></thead>
-          <tbody id="rbody"></tbody>
-        </table></div>
-      </section>
-      <section class="result" aria-labelledby="et">
-        <h2 id="et">Envios</h2>
-        <div class="envios" id="envios"></div>
-      </section>
-      <section id="detalhe" style="display:grid;gap:28px"></section>
-      <div class="actions" id="acts" hidden>
-        <span class="st" id="status"></span>
+    <div class="campo"><label for="emp" style="color:var(--rail-2)">Empresa</label><select id="emp"></select></div>
+    <div class="indice" id="indice" hidden aria-live="polite">
+      <h1 id="ind-t">Envio selecionado</h1>
+      <div class="faixa" id="faixa"></div>
+      <div class="regua" id="regua"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="regua-lbl"><span>0</span><span>21</span><span>41</span><span>61</span><span>81</span></div>
+      <div class="placar"><b id="pts">0</b> de 100 pontos<span id="decl"></span></div>
+    </div>
+    <div>
+      <div style="font-size:14px;color:var(--rail-2);margin-bottom:8px">Envios</div>
+      <div class="envios" id="envios"></div>
+    </div>
+    <div class="acoes-rail">
+      <button class="btn claro pequeno" id="reload" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Atualizar</button>
+      <button class="btn claro pequeno" id="sair" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Sair</button>
+    </div>
+  </aside>
+
+  <main>
+    <div class="msg" id="msg"></div>
+    <section class="abertura">
+      <h2 id="titulo">Respostas por empresa</h2>
+      <p id="subt">Escolha a empresa na coluna ao lado. A tabela compara o envio mais recente de cada momento, usando a nota validada quando existe.</p>
+    </section>
+    <section aria-labelledby="rt">
+      <div class="dim"><header><h2 id="rt">Resultado por dimensão</h2><span></span></header></div>
+      <div class="tabela"><table>
+        <thead><tr><th>Dimensão</th><th>Inicial</th><th>Final</th><th>Evolução</th><th></th></tr></thead>
+        <tbody id="rbody"></tbody>
+      </table></div>
+      <div class="legenda"><span><i style="background:var(--agua)"></i>Avaliação inicial</span><span><i style="background:var(--petroleo)"></i>Avaliação final</span></div>
+    </section>
+    <div id="detalhe" style="display:grid;gap:64px"></div>
+    <div class="salvo" id="barra-salvar" hidden>
+      <span id="status"></span>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button class="btn claro" id="pdf" type="button">Baixar em PDF</button>
         <button class="btn" id="save" type="button">Salvar validação</button>
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
 </div>
 
 <script src="config.js"></script>
@@ -78,82 +78,99 @@ const $ = id => document.getElementById(id);
 const sb = getClient();
 const st = {rows: [], vals: {}, empresas: [], emp: null, sel: null, draft: {}, open: {}, dirty: false};
 const normEmp = s => (s || "").trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/\s+/g, " ");
+$("logo").innerHTML = logoSvg(46);
+$("logo-l").innerHTML = logoSvg(48, "var(--petroleo)");
 
-function note(msg, err) { $("notice").textContent = msg || ""; $("notice").className = "notice" + (err ? " err" : ""); }
+function msg(t) { $("msg").textContent = t || ""; }
 
 async function boot() {
-  if (!sb) { $("login").hidden = false; $("lnotice").textContent = "Configure o config.js com a URL e a chave do Supabase."; return; }
+  if (!sb) { $("login").hidden = false; $("lmsg").textContent = "Configure o config.js com o endereço e a chave do Supabase."; return; }
   const {data} = await sb.auth.getSession();
-  if (data.session) { showPainel(); } else { $("login").hidden = false; }
+  if (data.session) mostrar(); else $("login").hidden = false;
 }
 $("login").onsubmit = async e => {
   e.preventDefault();
-  $("lnotice").textContent = "Entrando…";
+  $("lmsg").textContent = "";
   const {error} = await sb.auth.signInWithPassword({email: $("lemail").value.trim(), password: $("lsenha").value});
-  if (error) { $("lnotice").textContent = "E-mail ou senha incorretos."; return; }
-  $("lsenha").value = ""; $("login").hidden = true; showPainel();
+  if (error) { $("lmsg").textContent = "E-mail ou senha incorretos."; return; }
+  $("lsenha").value = ""; $("login").hidden = true; mostrar();
 };
 $("sair").onclick = async () => { await sb.auth.signOut(); location.reload(); };
-$("reload").onclick = () => load(true);
+$("reload").onclick = () => carregar(true);
+async function mostrar() { $("painel").hidden = false; await carregar(false); }
 
-async function showPainel() { $("painel").hidden = false; await load(false); }
-
-async function load(keep) {
-  note("Carregando…");
+async function carregar(manter) {
+  msg("");
   let r, v;
-  try { [r, v] = await Promise.all([
-    sb.from("iac_respostas").select("id, criado_em, empresa, email, momento, respostas, pontos").order("criado_em", {ascending: false}),
-    sb.from("iac_validacoes").select("resposta_id, notas, atualizado_em")
-  ]); } catch (err) { note("Sem conexão com o banco de dados. Tente de novo.", true); return; }
-  if (r.error || v.error) { note("Não foi possível carregar as respostas. Confira se você entrou com o e-mail de administrador.", true); return; }
+  try {
+    [r, v] = await Promise.all([
+      sb.from("iac_respostas").select("id, criado_em, empresa, email, momento, respostas, pontos").order("criado_em", {ascending: false}),
+      sb.from("iac_validacoes").select("resposta_id, notas, atualizado_em")
+    ]);
+  } catch (err) { msg("Sem conexão com o banco de dados. Tente de novo em instantes."); return; }
+  if (r.error || v.error) { msg("Não foi possível carregar as respostas. Confira se você entrou com o e-mail de administrador."); return; }
   st.rows = r.data; st.vals = Object.fromEntries(v.data.map(x => [x.resposta_id, x]));
   const map = new Map();
-  for (const row of st.rows) { const k = normEmp(row.empresa); if (!map.has(k)) map.set(k, {key: k, nome: row.empresa.trim().replace(/\s+/g, " "), ult: row.criado_em, n: 0}); map.get(k).n++; }
+  for (const row of st.rows) { const k = normEmp(row.empresa); if (!map.has(k)) map.set(k, {key: k, nome: row.empresa.trim().replace(/\s+/g, " "), n: 0}); map.get(k).n++; }
   st.empresas = [...map.values()].sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
-  if (!st.empresas.length) { $("emp").innerHTML = `<option>Nenhum envio ainda</option>`; note("Nenhuma resposta recebida ainda."); renderEmpresa(); return; }
-  if (!keep || !st.empresas.find(x => x.key === st.emp)) st.emp = st.empresas[0].key;
+  if (!st.empresas.length) { $("emp").innerHTML = `<option>Nenhum envio ainda</option>`; st.emp = null; st.sel = null; tudo(); return; }
+  if (!manter || !st.empresas.find(x => x.key === st.emp)) st.emp = st.empresas[0].key;
   $("emp").innerHTML = st.empresas.map(x => `<option value="${escapeHtml(x.key)}" ${x.key === st.emp ? "selected" : ""}>${escapeHtml(x.nome)} (${x.n})</option>`).join("");
-  note("");
-  if (!keep || !st.rows.find(x => x.id === st.sel)) st.sel = null;
-  renderEmpresa();
+  if (!manter || !st.rows.find(x => x.id === st.sel)) st.sel = null;
+  tudo();
 }
-$("emp").onchange = () => { if (st.dirty && !confirm("Há alterações de validação não salvas. Descartar?")) { $("emp").value = st.emp; return; } st.emp = $("emp").value; st.sel = null; renderEmpresa(); };
+$("emp").onchange = () => {
+  if (st.dirty && !descartar()) { $("emp").value = st.emp; return; }
+  st.emp = $("emp").value; st.sel = null; tudo();
+};
+let confirmaDescarte = false;
+function descartar() {
+  if (confirmaDescarte) { confirmaDescarte = false; return true; }
+  msg("Há uma validação não salva neste envio. Salve, ou repita a ação para descartar as alterações.");
+  confirmaDescarte = true; setTimeout(() => confirmaDescarte = false, 6000);
+  return false;
+}
 
-function rowsEmp() { return st.rows.filter(x => normEmp(x.empresa) === st.emp); }
-function effective(row) {
+const daEmpresa = () => st.rows.filter(x => normEmp(x.empresa) === st.emp);
+function efetiva(row) {
   if (!row) return null;
-  const v = st.vals[row.id] && st.vals[row.id].notas;
-  const out = {}; for (const k of KEYS) out[k] = v && v[k] && typeof v[k].nota === "number" ? v[k] : row.respostas[k]; return out;
+  const v = st.vals[row.id] && st.vals[row.id].notas, out = {};
+  for (const k of KEYS) out[k] = {nota: v && v[k] && typeof v[k].nota === "number" ? v[k].nota : row.respostas[k] && row.respostas[k].nota, evidencia: row.respostas[k] && row.respostas[k].evidencia};
+  return out;
 }
-function latest(m) { return rowsEmp().find(x => x.momento === m) || null; }
+const ultimo = m => daEmpresa().find(x => x.momento === m) || null;
 
-function renderEmpresa() {
-  const rs = rowsEmp();
+function tudo() {
+  const rs = daEmpresa();
   if (!st.sel && rs.length) st.sel = rs[0].id;
-  renderResult(); renderEnvios(); loadSel(); renderDetalhe();
+  const emp = st.empresas.find(x => x.key === st.emp);
+  $("titulo").textContent = emp ? emp.nome : "Nenhuma resposta recebida ainda";
+  $("subt").textContent = emp ? "A tabela compara o envio mais recente de cada momento, usando a nota validada quando existe." : "Quando um cliente salvar o formulário, a empresa aparece na coluna ao lado.";
+  resultado(); envios(); abrirEnvio(); detalhe();
 }
 
-function renderResult() {
-  const ei = effective(latest("inicial")), ef = effective(latest("final"));
-  let rows = "";
+function resultado() {
+  const ei = efetiva(ultimo("inicial")), ef = efetiva(ultimo("final"));
+  let h = "";
   for (const d of DIMS) {
     const a = ei ? dimScore(ei, d) : null, f = ef ? dimScore(ef, d) : null;
     const pa = a === null ? null : a * 5, pf = f === null ? null : f * 5, ev = pa !== null && pf !== null ? pf - pa : null;
-    rows += `<tr><td>${d.nome}</td><td class="n">${pa === null ? "–" : pa + "%"}</td><td class="n">${pf === null ? "–" : pf + "%"}</td><td class="n ${ev > 0 ? "up" : ""}">${ev === null ? "–" : (ev > 0 ? "+" : "") + ev + " p.p."}</td><td><div class="mini"><i style="width:${pa || 0}%"></i><i class="f" style="width:${pf || 0}%"></i></div></td></tr>`;
+    h += `<tr><td>${d.nome}</td><td class="n">${pa === null ? "–" : pa + "%"}</td><td class="n">${pf === null ? "–" : pf + "%"}</td><td class="n ${ev > 0 ? "sobe" : ""}">${ev === null ? "–" : (ev > 0 ? "+" : "") + ev + " p.p."}</td><td><div class="mini"><i style="width:${pa || 0}%"></i><i class="f" style="width:${pf || 0}%"></i></div></td></tr>`;
   }
   const ti = ei ? sumOf(ei).s : null, tf = ef ? sumOf(ef).s : null;
-  rows += `<tr><td><strong>IAC</strong></td><td class="n"><strong>${ti === null ? "–" : ti + "%"}</strong></td><td class="n"><strong>${tf === null ? "–" : tf + "%"}</strong></td><td class="n ${tf - ti > 0 ? "up" : ""}">${ti !== null && tf !== null ? ((tf - ti > 0 ? "+" : "") + (tf - ti) + " p.p.") : "–"}</td><td style="font-size:13px;color:var(--fg-2)">${ti !== null ? band(ti).nome : ""}${tf !== null ? " → " + band(tf).nome : ""}</td></tr>`;
-  $("rbody").innerHTML = rows;
+  h += `<tr class="total"><td>IAC</td><td class="n">${ti === null ? "–" : ti}</td><td class="n">${tf === null ? "–" : tf}</td><td class="n ${tf - ti > 0 ? "sobe" : ""}">${ti !== null && tf !== null ? (tf - ti > 0 ? "+" : "") + (tf - ti) : "–"}</td><td style="font-weight:400;font-size:14px;color:var(--texto-2)">${ti !== null ? band(ti).nome : ""}${tf !== null ? " para " + band(tf).nome : ""}</td></tr>`;
+  $("rbody").innerHTML = h;
 }
 
-function renderEnvios() {
-  $("envios").innerHTML = rowsEmp().map(x => {
-    const val = st.vals[x.id], s = sumOf(effective(x)).s;
-    return `<button type="button" class="envio" data-id="${x.id}" aria-pressed="${x.id === st.sel}"><span>${MOMENTOS[x.momento] || x.momento}</span><span class="m">${fmtDate(x.criado_em)}</span><span>${escapeHtml(x.email)}</span><span class="m">${s}%${val && s !== x.pontos ? ` (declarado ${x.pontos}%)` : ""}</span><span class="tag ${val ? "ok" : ""}">${val ? "Validado" : "A validar"}</span></button>`;
-  }).join("") || `<p style="margin:0;color:var(--fg-2)">Nenhum envio.</p>`;
+function envios() {
+  const rs = daEmpresa();
+  $("envios").innerHTML = rs.map(x => {
+    const val = st.vals[x.id];
+    return `<button type="button" class="envio" data-id="${x.id}" aria-pressed="${x.id === st.sel}" style="color:var(--rail-fg)"><span class="m">${MOMENTOS[x.momento] || x.momento}</span><span class="selo ${val ? "ok" : ""}">${val ? "Validado" : "A validar"}</span><span class="s" style="color:var(--rail-2)">${fmtDate(x.criado_em)}, ${escapeHtml(x.email)}</span></button>`;
+  }).join("") || `<p style="margin:0;color:var(--rail-2)">Nenhum envio.</p>`;
 }
 
-function loadSel() {
+function abrirEnvio() {
   const row = st.rows.find(x => x.id === st.sel);
   st.open = {}; st.dirty = false;
   if (!row) { st.draft = {}; return; }
@@ -161,53 +178,52 @@ function loadSel() {
   st.draft = v ? JSON.parse(JSON.stringify(v)) : Object.fromEntries(KEYS.map(k => [k, {nota: row.respostas[k] && row.respostas[k].nota, obs: ""}]));
 }
 
-function renderDetalhe() {
+function detalhe() {
   const row = st.rows.find(x => x.id === st.sel);
-  $("acts").hidden = !row; $("scorebox").hidden = !row; $("meterbox").hidden = !row;
+  $("barra-salvar").hidden = !row; $("indice").hidden = !row;
   if (!row) { $("detalhe").innerHTML = ""; return; }
-  let html = "", n = 0;
+  let h = "", n = 0;
   for (const d of DIMS) {
-    const ds = dimScore(st.draft, d);
-    html += `<section class="dim"><div class="dimhead"><h2>${d.nome}</h2><span>${ds === null ? "–" : ds} / 20</span></div>`;
+    h += `<section class="dim"><header><h2>${d.nome}</h2><span>${dimScore(st.draft, d) ?? "–"}/20</span></header>`;
     d.c.forEach((cr, i) => {
       n++;
       const k = d.id + "_" + (i + 1), decl = row.respostas[k] || {}, cur = st.draft[k] || {};
-      const hasD = typeof decl.nota === "number", chg = typeof cur.nota === "number" && cur.nota !== decl.nota;
-      html += `<div class="crit"><div class="q"><b>${String(n).padStart(2, "0")}</b><span>${escapeHtml(cr.t)}</span></div>`;
-      html += `<div class="declared"><span>Resposta do líder comercial${hasD ? " · nota " + decl.nota : ""}</span><div class="opt">${hasD ? escapeHtml(cr.o[decl.nota]) : "Sem resposta."}</div>${decl.evidencia ? `<div class="evd">Evidência: ${escapeHtml(decl.evidencia)}</div>` : ""}${chg ? `<div class="chg">Nota validada: ${cur.nota} · ${escapeHtml(cr.o[cur.nota])}</div>` : ""}</div>`;
-      html += `<button type="button" class="linkbtn" data-open="${k}">${st.open[k] ? "Fechar opções" : "Alterar nota"}</button>`;
+      const mudou = typeof cur.nota === "number" && cur.nota !== decl.nota, ev = (decl.evidencia || "").trim();
+      h += `<article class="q"><h3><span class="n">${n}</span><span>${escapeHtml(cr.t)}</span></h3>`;
+      h += `<div class="resp"><span class="quem">Resposta do líder comercial, nota ${decl.nota}</span><em>${escapeHtml(cr.o[decl.nota])}</em>${ev ? `<div class="prova">Comprovação: ${escapeHtml(ev)}</div>` : ""}${mudou ? `<div class="mudou">Nota validada: ${cur.nota}. ${escapeHtml(cr.o[cur.nota])}</div>` : ""}</div>`;
+      h += `<button type="button" class="linkbtn" data-open="${k}">${st.open[k] ? "Fechar opções" : "Alterar nota"}</button>`;
       if (st.open[k]) {
-        html += `<div class="scale" role="group" aria-label="Nota validada do critério ${n}">`;
-        for (let s = 0; s <= 5; s++) html += `<button type="button" data-k="${k}" data-s="${s}" aria-pressed="${cur.nota === s}" class="${decl.nota === s && cur.nota !== s ? "decl" : ""}"><strong>${s}</strong><span>${escapeHtml(cr.o[s])}</span></button>`;
-        html += `</div>`;
+        h += `<ol class="opts">`;
+        for (let s = 0; s <= 5; s++) h += `<li><button type="button" data-k="${k}" data-s="${s}" aria-pressed="${cur.nota === s}"><span class="grau"><b>${s}</b><i style="width:${s === 0 ? 3 : s * 6}px"></i></span><span class="t">${escapeHtml(cr.o[s])}</span></button></li>`;
+        h += `</ol>`;
       }
-      html += `<div class="ev"><label for="t-${k}">Observação da validação</label><textarea id="t-${k}" data-k="${k}" placeholder="O que foi visto e o que falta">${escapeHtml(cur.obs || "")}</textarea></div></div>`;
+      h += `<div class="ev"><label for="o-${k}">Observação da validação</label><textarea id="o-${k}" data-k="${k}" placeholder="O que foi visto e o que falta">${escapeHtml(cur.obs || "")}</textarea></div></article>`;
     });
-    html += `</section>`;
+    h += `</section>`;
   }
-  $("detalhe").innerHTML = html;
-  renderScore(row);
+  $("detalhe").innerHTML = h;
+  placar(row);
 }
-function renderScore(row) {
-  const {s, n} = sumOf(st.draft);
-  const b = renderMeter($("meter"), s, n);
-  $("pct").textContent = s + "%"; $("band").textContent = b.nome;
-  $("pts").textContent = `${MOMENTOS[row.momento] || row.momento} · declarado ${row.pontos}%`;
+function placar(row) {
+  const {s, n} = sumOf(st.draft), b = band(s);
+  $("ind-t").textContent = MOMENTOS[row.momento] || row.momento;
+  $("faixa").textContent = b.nome; $("pts").textContent = s; paintRegua($("regua"), s, n > 0);
+  $("decl").textContent = s !== row.pontos ? ` (declarado ${row.pontos})` : "";
   const v = st.vals[row.id];
   $("status").textContent = (v ? `Validação salva em ${fmtDate(v.atualizado_em)}.` : "Ainda não validado.") + (st.dirty ? " Há alterações não salvas." : "");
 }
 
 document.addEventListener("click", e => {
   const env = e.target.closest(".envio");
-  if (env) { if (st.dirty && !confirm("Há alterações de validação não salvas. Descartar?")) return; st.sel = env.dataset.id; renderEnvios(); loadSel(); renderDetalhe(); return; }
+  if (env) { if (st.dirty && !descartar()) return; msg(""); st.sel = env.dataset.id; envios(); abrirEnvio(); detalhe(); return; }
   const o = e.target.closest("[data-open]");
-  if (o) { const y = window.scrollY; st.open[o.dataset.open] = !st.open[o.dataset.open]; renderDetalhe(); window.scrollTo(0, y); return; }
-  const b = e.target.closest(".scale button");
-  if (b) { st.draft[b.dataset.k] = Object.assign({}, st.draft[b.dataset.k], {nota: +b.dataset.s}); st.dirty = true; const y = window.scrollY; renderDetalhe(); window.scrollTo(0, y); }
+  if (o) { const y = scrollY; st.open[o.dataset.open] = !st.open[o.dataset.open]; detalhe(); scrollTo(0, y); return; }
+  const b = e.target.closest("#detalhe .opts button");
+  if (b) { st.draft[b.dataset.k] = Object.assign({}, st.draft[b.dataset.k], {nota: +b.dataset.s}); st.dirty = true; const y = scrollY; detalhe(); scrollTo(0, y); }
 });
 document.addEventListener("input", e => {
   const t = e.target;
-  if (t.matches("#detalhe textarea[data-k]")) { st.draft[t.dataset.k] = Object.assign({}, st.draft[t.dataset.k], {obs: t.value}); st.dirty = true; renderScore(st.rows.find(x => x.id === st.sel)); }
+  if (t.matches("#detalhe textarea[data-k]")) { st.draft[t.dataset.k] = Object.assign({}, st.draft[t.dataset.k], {obs: t.value}); st.dirty = true; placar(st.rows.find(x => x.id === st.sel)); }
 });
 $("save").onclick = async () => {
   const row = st.rows.find(x => x.id === st.sel); if (!row) return;
@@ -216,9 +232,15 @@ $("save").onclick = async () => {
   let error = null;
   try { ({error} = await sb.from("iac_validacoes").upsert({resposta_id: row.id, notas: st.draft, atualizado_em})); } catch (err) { error = err; }
   $("save").disabled = false;
-  if (error) { note("Não foi possível salvar a validação. Tente de novo.", true); renderScore(row); return; }
+  if (error) { msg("Não foi possível salvar a validação. Confira a conexão e tente de novo."); placar(row); return; }
   st.vals[row.id] = {resposta_id: row.id, notas: JSON.parse(JSON.stringify(st.draft)), atualizado_em};
-  st.dirty = false; note(""); renderResult(); renderEnvios(); renderScore(row);
+  st.dirty = false; msg(""); resultado(); envios(); placar(row);
+};
+$("pdf").onclick = () => {
+  const row = st.rows.find(x => x.id === st.sel); if (!row) return;
+  const resp = {}; for (const k of KEYS) resp[k] = {nota: typeof (st.draft[k] || {}).nota === "number" ? st.draft[k].nota : row.respostas[k].nota, evidencia: row.respostas[k].evidencia};
+  const obs = Object.fromEntries(KEYS.map(k => [k, ((st.draft[k] || {}).obs || "").trim()]).filter(x => x[1]));
+  imprimirFolha({empresa: row.empresa.trim(), email: row.email, momento: row.momento, data: fmtDia(row.criado_em), respostas: resp, obs});
 };
 window.addEventListener("beforeunload", e => { if (st.dirty) { e.preventDefault(); e.returnValue = ""; } });
 boot();
