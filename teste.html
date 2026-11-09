@@ -80,6 +80,19 @@ const $ = id => document.getElementById(id);
 const sb = getClient();
 const ISCA = ["processos_1","processos_4","indicadores_1","indicadores_2","pessoas_1","pessoas_3","decisoes_3","decisoes_4","governanca_2","governanca_4"];
 const CRIT = Object.fromEntries(DIMS.flatMap(d => d.c.map((c, i) => [d.id + "_" + (i + 1), Object.assign({dim: d.id}, c)])));
+/* Opções reescritas falando com "você" no teste. */
+const VOCE = {
+  indicadores_1: {0: "Você só conhece o faturamento do mês."},
+  indicadores_2: {1: "As metas existem só na sua cabeça ou na de alguém do time."},
+  pessoas_1: {2: "Há reunião semanal, mas sem pauta fixa ou sempre conduzida por você."},
+  pessoas_3: {2: "Conhecem meta e comissão, mas não sabem calcular quanto ganham a mais se a etapa delas melhorar.", 3: "Cada pessoa conhece a meta e sabe quanto ganha a mais quando a etapa dela melhora, com a conta feita."},
+  decisoes_3: {2: "Há limites combinados de boca para alguns itens, sem nada escrito."},
+  decisoes_4: {1: "Você é acionado todos os dias para decisões que o time poderia tomar.", 2: "Você é acionado algumas vezes por semana para decisões operacionais.", 3: "Você é acionado de vez em quando, quase sempre para o que está fora das alçadas.", 4: "Você só é acionado para decisões estratégicas ou fora das alçadas.", 5: "Você pode se ausentar tranquilamente por duas semanas sem nenhuma decisão operacional esperando por você."},
+  governanca_2: {0: "Você busca os números sozinho no CRM ou com cada vendedor.", 1: "Você precisa pedir os números toda vez.", 2: "O reporte existe, mas você ainda precisa complementar com perguntas.", 3: "O reporte responde à maior parte das suas perguntas.", 4: "Você acompanha a operação só pelo reporte.", 5: "O reporte antecipa as suas perguntas."},
+  governanca_4: {0: "Sem você, os rituais param.", 1: "Só acontecem com você presente.", 2: "Às vezes acontecem sem você, mas perdem a regularidade.", 3: "Acontecem sem você na maior parte das vezes.", 4: "Acontecem sempre sem você, inclusive nas suas ausências.", 5: "Continuam e evoluem sem você."}
+};
+for (const k in VOCE) { CRIT[k] = Object.assign({}, CRIT[k], {o: CRIT[k].o.map((o, s) => VOCE[k][s] || o)}); }
+CRIT.governanca_4 = Object.assign({}, CRIT.governanca_4, {t: "Os rituais do time, como reuniões e reportes, continuam quando você não participa."});
 const TIMES = ["Só eu vendo", "1 ou 2 pessoas", "3 a 5 pessoas", "6 a 15 pessoas", "Mais de 15 pessoas"];
 const FATURAMENTO = ["Até R$ 1 milhão por ano", "De R$ 1 a 5 milhões", "De R$ 5 a 20 milhões", "Acima de R$ 20 milhões", "Prefiro não informar"];
 const LEITURA = [
