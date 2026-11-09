@@ -53,3 +53,8 @@ grant insert on public.iac_respostas to anon, authenticated;
 grant select, update, delete on public.iac_respostas to authenticated;
 grant select, insert, update, delete on public.iac_validacoes to authenticated;
 grant execute on function public.iac_is_admin() to anon, authenticated;
+
+-- 09/11/2026: nome e cargo de quem preenche.
+alter table public.iac_respostas
+  add column if not exists nome text check (char_length(nome) <= 200),
+  add column if not exists cargo text check (char_length(cargo) <= 100);

@@ -7,7 +7,7 @@
 <title>Painel do mentor · IAC</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="estilo.css">
+<link rel="stylesheet" href="estilo.css?v=3">
 </head>
 <body>
 
@@ -70,9 +70,9 @@
   </main>
 </div>
 
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="iac.js"></script>
+<script src="iac.js?v=3"></script>
 <script>
 const $ = id => document.getElementById(id);
 const sb = getClient();
@@ -104,7 +104,7 @@ async function carregar(manter) {
   let r, v;
   try {
     [r, v] = await Promise.all([
-      sb.from("iac_respostas").select("id, criado_em, empresa, email, momento, respostas, pontos").order("criado_em", {ascending: false}),
+      sb.from("iac_respostas").select("id, criado_em, nome, cargo, empresa, email, momento, respostas, pontos").order("criado_em", {ascending: false}),
       sb.from("iac_validacoes").select("resposta_id, notas, atualizado_em")
     ]);
   } catch (err) { msg("Sem conexão com o banco de dados. Tente de novo em instantes."); return; }
@@ -166,7 +166,7 @@ function envios() {
   const rs = daEmpresa();
   $("envios").innerHTML = rs.map(x => {
     const val = st.vals[x.id];
-    return `<button type="button" class="envio" data-id="${x.id}" aria-pressed="${x.id === st.sel}" style="color:var(--rail-fg)"><span class="m">${MOMENTOS[x.momento] || x.momento}</span><span class="selo ${val ? "ok" : ""}">${val ? "Validado" : "A validar"}</span><span class="s" style="color:var(--rail-2)">${fmtDate(x.criado_em)}, ${escapeHtml(x.email)}</span></button>`;
+    return `<button type="button" class="envio" data-id="${x.id}" aria-pressed="${x.id === st.sel}" style="color:var(--rail-fg)"><span class="m">${MOMENTOS[x.momento] || x.momento}</span><span class="selo ${val ? "ok" : ""}">${val ? "Validado" : "A validar"}</span><span class="s" style="color:var(--rail-2)">${x.nome ? escapeHtml(x.nome) + (x.cargo ? ", " + escapeHtml(x.cargo) : "") + "<br>" : ""}${escapeHtml(x.email)}<br>${fmtDate(x.criado_em)}</span></button>`;
   }).join("") || `<p style="margin:0;color:var(--rail-2)">Nenhum envio.</p>`;
 }
 
@@ -190,7 +190,7 @@ function detalhe() {
       const k = d.id + "_" + (i + 1), decl = row.respostas[k] || {}, cur = st.draft[k] || {};
       const mudou = typeof cur.nota === "number" && cur.nota !== decl.nota, ev = (decl.evidencia || "").trim();
       h += `<article class="q"><h3><span class="n">${n}</span><span>${escapeHtml(cr.t)}</span></h3>`;
-      h += `<div class="resp"><span class="quem">Resposta do líder comercial, nota ${decl.nota}</span><em>${escapeHtml(cr.o[decl.nota])}</em>${ev ? `<div class="prova">Comprovação: ${escapeHtml(ev)}</div>` : ""}${mudou ? `<div class="mudou">Nota validada: ${cur.nota}. ${escapeHtml(cr.o[cur.nota])}</div>` : ""}</div>`;
+      h += `<div class="resp"><span class="quem">Resposta de ${row.nome ? escapeHtml(row.nome.split(" ")[0]) : "quem preencheu"}, nota ${decl.nota}</span><em>${escapeHtml(cr.o[decl.nota])}</em>${ev ? `<div class="prova">Comprovação: ${escapeHtml(ev)}</div>` : ""}${mudou ? `<div class="mudou">Nota validada: ${cur.nota}. ${escapeHtml(cr.o[cur.nota])}</div>` : ""}</div>`;
       h += `<button type="button" class="linkbtn" data-open="${k}">${st.open[k] ? "Fechar opções" : "Alterar nota"}</button>`;
       if (st.open[k]) {
         h += `<ol class="opts">`;
@@ -240,7 +240,7 @@ $("pdf").onclick = () => {
   const row = st.rows.find(x => x.id === st.sel); if (!row) return;
   const resp = {}; for (const k of KEYS) resp[k] = {nota: typeof (st.draft[k] || {}).nota === "number" ? st.draft[k].nota : row.respostas[k].nota, evidencia: row.respostas[k].evidencia};
   const obs = Object.fromEntries(KEYS.map(k => [k, ((st.draft[k] || {}).obs || "").trim()]).filter(x => x[1]));
-  imprimirFolha({empresa: row.empresa.trim(), email: row.email, momento: row.momento, data: fmtDia(row.criado_em), respostas: resp, obs});
+  imprimirFolha({nome: row.nome, cargo: row.cargo, empresa: row.empresa.trim(), email: row.email, momento: row.momento, data: fmtDia(row.criado_em), respostas: resp, obs});
 };
 window.addEventListener("beforeunload", e => { if (st.dirty) { e.preventDefault(); e.returnValue = ""; } });
 boot();

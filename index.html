@@ -6,7 +6,7 @@
 <title>Índice de Autonomia Comercial · Resolvedoria</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="estilo.css">
+<link rel="stylesheet" href="estilo.css?v=3">
 </head>
 <body>
 <div class="shell">
@@ -37,8 +37,10 @@
     </section>
 
     <section class="dados" aria-label="Seus dados">
+      <div class="campo" id="c-nome"><label for="nome">Seu nome</label><input id="nome" autocomplete="name" placeholder="Nome e sobrenome"></div>
+      <div class="campo" id="c-cargo"><label for="cargo">Cargo</label><select id="cargo"><option value="">Escolha o seu cargo</option></select></div>
       <div class="campo" id="c-empresa"><label for="empresa">Empresa</label><input id="empresa" autocomplete="organization" placeholder="Nome da empresa"></div>
-      <div class="campo" id="c-email"><label for="email">Seu e-mail</label><input id="email" type="email" autocomplete="email" placeholder="voce@empresa.com.br"></div>
+      <div class="campo" id="c-email"><label for="email">E-mail da empresa</label><input id="email" type="email" autocomplete="email" placeholder="voce@suaempresa.com.br"><span class="dica">Use o e-mail corporativo. Gmail, Hotmail e outros e-mails gratuitos não são aceitos.</span></div>
       <div class="campo"><label for="momento">Momento</label><select id="momento"><option value="inicial">Avaliação inicial</option><option value="final">Avaliação final</option></select></div>
     </section>
 
@@ -64,9 +66,9 @@
   <button class="btn salvar" type="button">Salvar</button>
 </div>
 
-<script src="config.js"></script>
+<script src="config.js?v=3"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="iac.js"></script>
+<script src="iac.js?v=3"></script>
 <script>
 const $ = id => document.getElementById(id);
 const sb = getClient();
@@ -76,15 +78,16 @@ let salvo = null;
 
 $("logo").innerHTML = logoSvg(46);
 $("lk").href = LINKEDIN;
+$("cargo").insertAdjacentHTML("beforeend", CARGOS.map(c => `<option>${c}</option>`).join(""));
 
 function guardar() {
   if (salvo) return;
-  try { localStorage.setItem(RASCUNHO, JSON.stringify({empresa: $("empresa").value, email: $("email").value, momento: $("momento").value, respostas: r})); } catch (e) {}
+  try { localStorage.setItem(RASCUNHO, JSON.stringify({nome: $("nome").value, cargo: $("cargo").value, empresa: $("empresa").value, email: $("email").value, momento: $("momento").value, respostas: r})); } catch (e) {}
 }
 function carregar() {
   try {
     const d = JSON.parse(localStorage.getItem(RASCUNHO) || "null");
-    if (d) { $("empresa").value = d.empresa || ""; $("email").value = d.email || ""; $("momento").value = d.momento || "inicial"; r = d.respostas || {}; }
+    if (d) { $("nome").value = d.nome || ""; $("cargo").value = d.cargo || ""; $("empresa").value = d.empresa || ""; $("email").value = d.email || ""; $("momento").value = d.momento || "inicial"; r = d.respostas || {}; }
   } catch (e) {}
 }
 
@@ -132,16 +135,21 @@ function aviso(titulo, texto, acoes) {
 }
 const lista = ns => ns.length > 1 ? ns.slice(0, -1).join(", ") + " e " + ns[ns.length - 1] : String(ns[0]);
 
-function pdf() { imprimirFolha({empresa: salvo.empresa, email: salvo.email, momento: salvo.momento, data: fmtDia(new Date()), respostas: salvo.respostas}); }
+function pdf() { imprimirFolha({nome: salvo.nome, cargo: salvo.cargo, empresa: salvo.empresa, email: salvo.email, momento: salvo.momento, data: fmtDia(new Date()), respostas: salvo.respostas}); }
 
 let confirmouProva = false;
 async function salvar() {
   if (salvo) { pdf(); return; }
-  const empresa = $("empresa").value.trim(), email = $("email").value.trim();
-  $("c-empresa").classList.toggle("erro", !empresa);
-  $("c-email").classList.toggle("erro", !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
-  if (!empresa || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    aviso("Faltam seus dados", [!empresa ? "Preencha o nome da empresa." : "Preencha um e-mail válido."], [["Preencher agora", () => { fecharCamada(); const el = !empresa ? $("empresa") : $("email"); el.scrollIntoView({block: "center"}); el.focus({preventScroll: true}); }]]);
+  const nome = $("nome").value.trim(), cargo = $("cargo").value, empresa = $("empresa").value.trim(), email = $("email").value.trim();
+  const erros = [];
+  if (!nome) erros.push(["nome", "Preencha o seu nome."]);
+  if (!cargo) erros.push(["cargo", "Escolha o seu cargo."]);
+  if (!empresa) erros.push(["empresa", "Preencha o nome da empresa."]);
+  if (!emailValido(email)) erros.push(["email", "Preencha um e-mail válido."]);
+  else if (!emailCorporativo(email)) erros.push(["email", "Use o e-mail da empresa. E-mails gratuitos, como Gmail e Hotmail, não são aceitos."]);
+  ["nome", "cargo", "empresa", "email"].forEach(c => $("c-" + c).classList.toggle("erro", erros.some(e => e[0] === c)));
+  if (erros.length) {
+    aviso("Faltam seus dados", erros.map(e => e[1]), [["Preencher agora", () => { fecharCamada(); const el = $(erros[0][0]); el.scrollIntoView({block: "center"}); el.focus({preventScroll: true}); }]]);
     return;
   }
   const falta = KEYS.filter(k => !r[k] || typeof r[k].nota !== "number");
@@ -163,13 +171,13 @@ async function salvar() {
   document.querySelectorAll(".salvar").forEach(b => b.disabled = true);
   const momento = $("momento").value, pontos = sumOf(r).s;
   let error = null;
-  try { ({error} = await sb.from("iac_respostas").insert({empresa, email, momento, respostas: r, pontos})); } catch (err) { error = err; }
+  try { ({error} = await sb.from("iac_respostas").insert({nome, cargo, empresa, email, momento, respostas: r, pontos})); } catch (err) { error = err; }
   document.querySelectorAll(".salvar").forEach(b => b.disabled = false);
   if (error) { aviso("Não foi possível salvar", ["A conexão falhou. Suas respostas continuam aqui; confira a internet e tente de novo."], [["Tentar de novo", () => { fecharCamada(); salvar(); }], ["Fechar", fecharCamada]]); return; }
-  salvo = {empresa, email, momento, respostas: JSON.parse(JSON.stringify(r))};
+  salvo = {nome, cargo, empresa, email, momento, respostas: JSON.parse(JSON.stringify(r))};
   try { localStorage.removeItem(RASCUNHO); } catch (e) {}
   document.querySelectorAll(".salvar").forEach(b => b.textContent = b.closest(".barra") ? "PDF" : "Baixar em PDF");
-  document.querySelectorAll(".opts button, textarea, #empresa, #email, #momento").forEach(el => el.disabled = true);
+  document.querySelectorAll(".opts button, textarea, #nome, #cargo, #empresa, #email, #momento").forEach(el => el.disabled = true);
   placar();
   aviso("Respostas salvas", ["As 20 perguntas foram salvas. As notas e as comprovações serão revisadas com você no encontro.", "Quer guardar uma cópia? Baixe as respostas em PDF."], [["Baixar em PDF", pdf], ["Fechar", fecharCamada]]);
 }
@@ -187,10 +195,11 @@ document.addEventListener("input", e => {
     r[t.dataset.k].evidencia = t.value;
     const f = t.parentElement.querySelector(".falta"); if (f && t.value.trim()) f.remove();
   }
-  if (t.id === "empresa" || t.id === "email") t.parentElement.classList.remove("erro");
+  if (["nome", "empresa", "email"].includes(t.id)) t.parentElement.classList.remove("erro");
   guardar();
 });
 $("momento").addEventListener("change", guardar);
+$("cargo").addEventListener("change", () => { $("c-cargo").classList.remove("erro"); guardar(); });
 carregar(); render();
 </script>
 </body>

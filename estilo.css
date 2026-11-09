@@ -78,7 +78,10 @@ main { padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); paddin
 .abertura h2 { font: 700 34px/1.12 var(--display); letter-spacing: -0.01em; margin: 0 0 14px; text-wrap: balance; max-width: 20ch; }
 .abertura p { margin: 0; color: var(--texto-2); max-width: 60ch; font-size: 17px; }
 
-.dados { display: grid; grid-template-columns: 1fr 1fr 180px; gap: 14px; }
+.dados { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.campo .dica { font-size: 13px; color: var(--texto-2); }
+.campo select { border: 1px solid var(--linha); background: var(--papel); border-radius: 6px; padding: 11px 12px; width: 100%; }
+.campo.erro select { border-color: var(--ambar); }
 .campo { display: grid; gap: 6px; }
 .campo label { font-size: 14px; font-weight: 600; }
 .campo input, .campo select { border: 1px solid var(--linha); background: var(--papel); border-radius: 6px; padding: 11px 12px; width: 100%; }
@@ -205,7 +208,7 @@ main { padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); paddin
 .envio[aria-pressed="true"] { background: var(--agua-claro); box-shadow: inset 3px 0 0 var(--petroleo); }
 .envio .m { font-weight: 600; }
 .envio .d { font: 13px var(--mono); color: var(--texto-2); }
-.envio .s { grid-column: 1 / -1; font-size: 13px; color: var(--texto-2); }
+.envio .s { grid-column: 1 / -1; font-size: 14px; color: var(--texto-2); line-height: 1.4; }
 .selo { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--nevoa); color: var(--texto-2); justify-self: end; }
 .selo.ok { background: var(--agua-claro); color: var(--petroleo); }
 .acoes-rail { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -213,8 +216,8 @@ main { padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); paddin
 .btn.pequeno { padding: 8px 12px; font-size: 14px; }
 .tabela { overflow-x: auto; }
 .tabela table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
-.tabela th, .tabela td { text-align: left; padding: 10px 12px 10px 0; border-bottom: 1px solid var(--linha); }
-.tabela th { font-size: 14px; color: var(--texto-2); font-weight: 600; }
+.tabela th, .tabela td { text-align: left; padding: 12px 12px 12px 0; border-bottom: 1px solid var(--linha); font-size: 16px; }
+.tabela th { font-size: 15px; color: var(--texto-2); font-weight: 600; }
 .tabela td.n { white-space: nowrap; }
 .tabela tr.total td { font-weight: 700; border-bottom: 2px solid var(--petroleo); }
 .sobe { color: #2F8A6A; font-weight: 600; }
@@ -224,13 +227,19 @@ main { padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); paddin
 .legenda { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--texto-2); margin-top: 10px; }
 .legenda i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
 .resp { margin-left: 34px; display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--linha); border-radius: 8px; }
-.resp em { font-size: 15px; }
-.resp .quem { font-size: 13px; color: var(--texto-2); }
-.prova { padding: 6px 10px; background: var(--nevoa); border-left: 3px solid var(--agua); font-size: 14px; }
-.mudou { font-size: 14px; padding: 6px 10px; background: var(--ambar-claro); border-left: 3px solid var(--ambar); }
-.linkbtn { margin-left: 34px; justify-self: start; border: 0; background: none; padding: 0; color: var(--texto-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 14px; }
+.resp em { font-size: 17px; line-height: 1.45; }
+.resp .quem { font-size: 14px; color: var(--texto-2); }
+.prova { padding: 8px 12px; background: var(--nevoa); border-left: 3px solid var(--agua); font-size: 15px; }
+.mudou { font-size: 15px; padding: 8px 12px; background: var(--ambar-claro); border-left: 3px solid var(--ambar); }
+.linkbtn { margin-left: 34px; justify-self: start; border: 0; background: none; padding: 0; color: var(--texto-2); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 15px; }
+.painel .q h3 { font-size: 19px; }
+.painel .opts .t { font-size: 16px; }
+.painel .ev label { font-size: 15px; }
+.painel .ev textarea { font-size: 16px; }
+.painel .abertura p { font-size: 17px; }
+.legenda { font-size: 14px; }
 .salvo { position: sticky; bottom: 0; background: var(--papel); border-top: 1px solid var(--linha); padding-block: 14px; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-.salvo span { color: var(--texto-2); font-size: 14px; }
+.salvo span { color: var(--texto-2); font-size: 15px; }
 .entrar { max-width: 380px; margin: 12vh auto; display: grid; gap: 16px; padding-inline: max(16px, env(safe-area-inset-left, 0px)); }
 .entrar h1 { font: 800 28px/1.1 var(--display); margin: 0; }
 .vazio { color: var(--texto-2); }

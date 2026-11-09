@@ -256,6 +256,10 @@ const KEYS = DIMS.flatMap(d => d.c.map((_, i) => d.id + "_" + (i + 1)));
 const BANDS = [[20,"Totalmente dependente"],[40,"Alta dependência"],[60,"Dependência condicionada"],[80,"Autonomia condicionada"],[100,"Autonomia alta"]];
 const MOMENTOS = {inicial: "Avaliação inicial", final: "Avaliação final"};
 const LINKEDIN = "https://www.linkedin.com/in/joaomateusdarosa/";
+const CARGOS = ["Fundador ou sócio", "Diretor", "Gerente ou head comercial", "Outro"];
+const EMAIL_GRATUITO = ["gmail.com","googlemail.com","hotmail.com","hotmail.com.br","outlook.com","outlook.com.br","live.com","live.com.br","msn.com","yahoo.com","yahoo.com.br","ymail.com","icloud.com","me.com","mac.com","aol.com","uol.com.br","bol.com.br","terra.com.br","ig.com.br","globo.com","globomail.com","r7.com","zipmail.com.br","oi.com.br","protonmail.com","proton.me","gmx.com","yandex.com","mail.com","tutanota.com"];
+function emailValido(e) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e); }
+function emailCorporativo(e) { const d = (e.split("@")[1] || "").toLowerCase().trim(); return !!d && !EMAIL_GRATUITO.includes(d); }
 
 function bandIdx(p) { for (let i = 0; i < BANDS.length; i++) if (p <= BANDS[i][0]) return i; return 4; }
 function band(p) { const i = bandIdx(p); return {nome: BANDS[i][1], idx: i}; }
@@ -280,7 +284,7 @@ function folhaHtml(o) {
   const dims = DIMS.map(d => `<tr><td>${d.nome}</td><td class="n">${dimScore(o.respostas, d) ?? "–"}/20</td></tr>`).join("");
   let n = 0;
   const resp = DIMS.map(d => `<section><h2>${d.nome}</h2><table>${d.c.map((cr, j) => { n++; const v = o.respostas[d.id + "_" + (j + 1)] || {}; const ev = (v.evidencia || "").trim(); return `<tr><td class="n">${n}</td><td><strong>${escapeHtml(cr.t)}</strong><p class="ev"><em>Nota ${v.nota}: ${escapeHtml(cr.o[v.nota])}</em></p>${ev ? `<p class="prova">Comprovação: ${escapeHtml(ev)}</p>` : ""}${o.obs && o.obs[d.id + "_" + (j + 1)] ? `<p class="prova">Validação: ${escapeHtml(o.obs[d.id + "_" + (j + 1)])}</p>` : ""}</td></tr>`; }).join("")}</table></section>`).join("");
-  return `<article class="folha"><header><div class="logo">${logoSvg(40, "#123A40")}<div><strong>Resolvedoria</strong><span>Índice de Autonomia Comercial</span></div></div><div class="meta"><b>${escapeHtml(o.empresa)}</b>${escapeHtml(o.email)}<br>${escapeHtml(MOMENTOS[o.momento] || o.momento)}, ${escapeHtml(o.data)}</div></header>
+  return `<article class="folha"><header><div class="logo">${logoSvg(40, "#123A40")}<div><strong>Resolvedoria</strong><span>Índice de Autonomia Comercial</span></div></div><div class="meta"><b>${escapeHtml(o.empresa)}</b>${o.nome ? escapeHtml(o.nome) + (o.cargo ? ", " + escapeHtml(o.cargo) : "") + "<br>" : ""}${escapeHtml(o.email)}<br>${escapeHtml(MOMENTOS[o.momento] || o.momento)}, ${escapeHtml(o.data)}</div></header>
   <section class="res"><div><small>Faixa</small><h1>${BANDS[i][1]}</h1><div class="regua" style="margin-top:14px">${regua}</div><div class="regua-lbl"><span>0</span><span>21</span><span>41</span><span>61</span><span>81</span></div></div><div class="pts">${s}<br><span>de 100 pontos</span></div></section>
   <section><h2>Por dimensão</h2><table><tr><th>Dimensão</th><th>Pontos</th></tr>${dims}</table></section>
   ${resp}
