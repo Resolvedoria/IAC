@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Teste de Autonomia Comercial · Resolvedoria</title>
+<meta name="description" content="10 perguntas, cerca de 4 minutos. Descubra quanto o seu comercial depende de você e qual é o primeiro passo para mudar isso.">
+<meta property="og:title" content="Quanto o seu comercial anda sem você?">
+<meta property="og:description" content="Teste de Autonomia Comercial da Resolvedoria: 10 perguntas, resultado na hora.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="estilo.css?v=4">
+<style>
+.consent { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 15px; grid-column: 1 / -1; }
+.consent input { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--petroleo); }
+.consent.erro span { background: var(--ambar-claro); box-shadow: -6px 0 0 var(--ambar-claro), 6px 0 0 var(--ambar-claro); }
+.opcional { font-weight: 400; color: var(--texto-2); }
+.resultado { display: grid; gap: 40px; }
+.res-topo { display: grid; gap: 14px; }
+.res-topo small { color: var(--texto-2); font-size: 15px; }
+.res-topo h2 { font: 800 44px/1.05 var(--display); margin: 0; letter-spacing: -0.015em; text-wrap: balance; }
+.res-topo .regua { max-width: 520px; margin: 4px 0 0; }
+.res-topo .regua-lbl { max-width: 520px; }
+.res-topo .regua i.cur { box-shadow: 0 0 0 2px var(--papel), 0 0 0 4px var(--petroleo); }
+.res-topo p { font-size: 18px; max-width: 60ch; margin: 0; }
+.bloco { display: grid; gap: 12px; padding-top: 20px; border-top: 2px solid var(--petroleo); }
+.bloco h3 { font: 700 24px/1.2 var(--display); margin: 0; }
+.bloco p { margin: 0; font-size: 17px; max-width: 62ch; }
+.barras { display: grid; gap: 10px; }
+.barras div { display: grid; grid-template-columns: 130px minmax(0, 1fr) 54px; gap: 12px; align-items: center; font-size: 16px; }
+.barras i { display: block; height: 10px; border-radius: 5px; background: var(--nevoa); position: relative; overflow: hidden; }
+.barras i b { position: absolute; inset: 0 auto 0 0; background: var(--agua); border-radius: 5px; }
+.barras div.g i b { background: var(--ambar); }
+.barras span.v { font: 14px var(--mono); text-align: right; color: var(--texto-2); }
+.convite { background: var(--rail-bg); color: var(--rail-fg); border-radius: 10px; padding: 28px; display: grid; gap: 14px; }
+.convite h3 { font: 800 26px/1.15 var(--display); margin: 0; }
+.convite p { margin: 0; color: var(--rail-2); font-size: 17px; max-width: 58ch; }
+.convite .acoes { display: flex; gap: 10px; flex-wrap: wrap; }
+.convite .btn { background: var(--rail-fg); color: var(--rail-bg); text-decoration: none; display: inline-block; }
+.convite .btn.claro { background: transparent; color: var(--rail-fg); border-color: var(--rail-linha); }
+.progresso { font: 600 15px/1.3 var(--corpo); color: var(--rail-2); }
+.progresso b { display: block; font: 800 34px/1.05 var(--display); color: var(--rail-fg); margin-top: 6px; }
+@media (max-width: 900px) {
+  .rail .progresso { display: none; }
+  .res-topo h2 { font-size: 34px; }
+  .barras div { grid-template-columns: 100px minmax(0, 1fr) 44px; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="rail" aria-label="Seu andamento">
+    <div class="marca">
+      <span id="logo"></span>
+      <strong>Resolvedoria</strong>
+      <a id="lk" target="_blank" rel="noopener">de João Mateus da Rosa</a>
+    </div>
+    <div class="progresso" id="prog-box">Teste de Autonomia Comercial<b id="prog">0 de 10</b></div>
+    <ul class="dims" id="nav"></ul>
+    <div class="enviar" id="enviar-box">
+      <button class="btn avancar" type="button">Ver meu resultado</button>
+      <small id="dica-rail">O resultado aparece na hora.</small>
+    </div>
+  </aside>
+
+  <main id="main"></main>
+</div>
+
+<div class="barra" id="barra">
+  <div class="info"><span id="prog-m">0 de 10 respondidas</span></div>
+  <span></span>
+  <button class="btn avancar" type="button">Ver resultado</button>
+</div>
+
+<script src="config.js?v=4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="iac.js?v=4"></script>
+<script>
+const $ = id => document.getElementById(id);
+const sb = getClient();
+const ISCA = ["processos_1","processos_4","indicadores_1","indicadores_2","pessoas_1","pessoas_3","decisoes_3","decisoes_4","governanca_2","governanca_4"];
+const CRIT = Object.fromEntries(DIMS.flatMap(d => d.c.map((c, i) => [d.id + "_" + (i + 1), Object.assign({dim: d.id}, c)])));
+const TIMES = ["Só eu vendo", "1 ou 2 pessoas", "3 a 5 pessoas", "6 a 15 pessoas", "Mais de 15 pessoas"];
+const FATURAMENTO = ["Até R$ 1 milhão por ano", "De R$ 1 a 5 milhões", "De R$ 5 a 20 milhões", "Acima de R$ 20 milhões", "Prefiro não informar"];
+const LEITURA = [
+  "O comercial anda porque você está em tudo. Numa semana sem você, o resultado cai. E cada venda nova pede mais da sua agenda, o que trava o crescimento.",
+  "Já existe alguma estrutura, mas ela depende de você lembrar, cobrar e decidir. O time executa; quem segura o processo é você.",
+  "Parte do comercial já roda sem você. Falta amarrar o resto: números que o time acompanha sozinho, decisões com regra e rituais que acontecem sem a sua presença.",
+  "O time funciona sem você no dia a dia. A dependência aparece nas exceções e nas decisões maiores. O próximo passo é deixar essas regras escritas.",
+  "O comercial roda e melhora sem você. O seu papel passa a ser ler o reporte, decidir o rumo e cuidar das pessoas-chave."
+];
+const PASSO = {
+  processos: "Escreva as etapas do funil com o critério de entrada e saída de cada uma, e defina o que cada pessoa registra no CRM. Sem isso, cada vendedor conduz de um jeito e nenhum número pode ser comparado.",
+  indicadores: "Meça o volume e a conversão de cada etapa por quatro semanas. Depois, desdobre a meta da empresa em metas por etapa. É o número que mostra onde o resultado trava, não a sensação.",
+  pessoas: "Coloque de pé uma reunião semanal com pauta fixa, conduzida por alguém do time, e deixe claro para cada pessoa qual é a meta dela e o que ela ganha quando a etapa melhora.",
+  decisoes: "Liste as decisões que hoje chegam até você e defina uma alçada para cada uma: descontos, prazos e exceções. Cada regra escrita é uma interrupção a menos na sua semana.",
+  governanca: "Defina um reporte semanal com formato fixo, que chegue até você sem precisar pedir. É ele que permite sair dos rituais do time sem perder o controle."
+};
+const WHATS = "5548999004726";
+const tu = s => s.replace(/sem intervenção do líder comercial/g, "sem a sua intervenção").replace(/^O líder comercial/, "Você").replace(/\. O líder comercial/g, ". Você").replace(/do líder comercial/g, "de você").replace(/ao líder comercial/g, "a você").replace(/pelo líder comercial/g, "por você").replace(/o líder comercial/g, "você");
+const RASCUNHO = "iac-teste-v1";
+const params = new URLSearchParams(location.search);
+const origem = (params.get("origem") || params.get("utm_source") || "").slice(0, 60);
+
+let r = {}, etapa = "perguntas", salvo = null, dados = {};
+$("logo").innerHTML = logoSvg(46);
+$("lk").href = LINKEDIN;
+
+function guardar() { if (salvo) return; try { localStorage.setItem(RASCUNHO, JSON.stringify({r, dados})); } catch (e) {} }
+function carregar() { try { const d = JSON.parse(localStorage.getItem(RASCUNHO) || "null"); if (d) { r = d.r || {}; dados = d.dados || {}; } } catch (e) {} }
+const feitos = () => ISCA.filter(k => r[k] && typeof r[k].nota === "number").length;
+const pontos = () => ISCA.reduce((s, k) => s + (r[k] ? r[k].nota : 0), 0) * 2;
+function porDim() { return DIMS.map(d => { const ks = ISCA.filter(k => CRIT[k].dim === d.id); return {d, ks, pts: ks.reduce((s, k) => s + (r[k] ? r[k].nota : 0), 0), max: ks.length * 5}; }); }
+function gargalo() { return porDim().reduce((a, b) => b.pts < a.pts ? b : a); }
+
+function renderNav() {
+  $("nav").innerHTML = porDim().map(x => `<li><a href="#d-${x.d.id}"><span class="dn">${x.d.nome}</span><span class="dp">${x.ks.filter(k => r[k]).length} de ${x.ks.length}</span><span class="ticks" style="grid-template-columns:repeat(${x.ks.length},1fr)">${x.ks.map(k => `<i class="${r[k] ? "on" : ""}"></i>`).join("")}</span></a></li>`).join("");
+  const n = feitos();
+  $("prog").textContent = `${n} de 10`;
+  $("prog-m").textContent = `${n} de 10 respondidas`;
+}
+
+function telaPerguntas() {
+  etapa = "perguntas";
+  $("nav").hidden = false; $("enviar-box").hidden = false; $("barra").hidden = false;
+  document.querySelectorAll(".avancar").forEach(b => b.textContent = b.closest(".barra") ? "Ver resultado" : "Ver meu resultado");
+  let h = `<section class="abertura"><h2>Quanto o seu comercial anda sem você?</h2><p>São 10 situações do dia a dia do time de vendas, e leva cerca de 4 minutos. Marque o que acontece hoje, não o que está planejado. No fim, você vê a sua faixa de autonomia e o primeiro passo para avançar.</p></section>
+  <section class="leitura" aria-label="Como ler as notas"><div><b>0 a 2</b><span>Não está estruturado ou depende de alguém lembrar</span></div><div><b>3</b><span>Está escrito e é praticado</span></div><div><b>4</b><span>Funciona sem você cobrar</span></div><div><b>5</b><span>O time melhora sozinho</span></div></section>
+  <div style="display:grid;gap:64px">`;
+  let n = 0;
+  for (const x of porDim()) {
+    h += `<section class="dim" id="d-${x.d.id}"><header><h2>${x.d.nome}</h2><span>${x.ks.filter(k => r[k]).length} de ${x.ks.length}</span></header>`;
+    for (const k of x.ks) {
+      n++; const cr = CRIT[k], cur = r[k];
+      h += `<article class="q" id="q-${k}" style="scroll-margin-top:24px"><h3><span class="n">${n}</span><span>${escapeHtml(tu(cr.t))}</span></h3><ol class="opts">`;
+      for (let s = 0; s <= 5; s++) h += `<li><button type="button" data-k="${k}" data-s="${s}" aria-pressed="${!!cur && cur.nota === s}"><span class="grau"><b>${s}</b><i style="width:${s === 0 ? 3 : s * 6}px"></i></span><span class="t">${escapeHtml(tu(cr.o[s]))}</span></button></li>`;
+      h += `</ol></article>`;
+    }
+    h += `</section>`;
+  }
+  h += `</div><section class="fim"><p id="fim"></p><button class="btn avancar" type="button">Ver meu resultado</button></section>`;
+  $("main").innerHTML = h;
+  renderNav(); fim();
+}
+function fim() { const n = feitos(); const f = $("fim"); if (f) f.textContent = n < 10 ? `Faltam ${10 - n} ${10 - n === 1 ? "pergunta" : "perguntas"}.` : "Tudo respondido."; }
+
+function aviso(titulo, texto, acoes) {
+  const c = abrirCamada(`<div class="aviso" role="dialog" aria-modal="true" aria-labelledby="av-t"><h2 id="av-t">${titulo}</h2>${texto.map(t => `<p>${t}</p>`).join("")}<div class="acoes">${acoes.map((a, i) => `<button class="btn${i ? " claro" : ""}" type="button" data-a="${i}">${a[0]}</button>`).join("")}</div></div>`);
+  c.querySelectorAll("[data-a]").forEach(b => b.onclick = () => acoes[+b.dataset.a][1]());
+  c.querySelector("[data-a]").focus();
+}
+
+function avancar() {
+  if (etapa === "perguntas") {
+    const falta = ISCA.filter(k => !r[k]);
+    if (falta.length) {
+      const ns = falta.map(k => ISCA.indexOf(k) + 1);
+      aviso(`Faltam ${falta.length} ${falta.length === 1 ? "pergunta" : "perguntas"}`, [`Responda as 10 para ver o resultado. ${falta.length === 1 ? "Falta a pergunta" : "Faltam as perguntas"} ${ns.length > 1 ? ns.slice(0, -1).join(", ") + " e " + ns[ns.length - 1] : ns[0]}.`],
+        [[`Ir para a pergunta ${ns[0]}`, () => { fecharCamada(); const a = $("q-" + falta[0]); a.scrollIntoView({block: "start"}); a.querySelector("button").focus({preventScroll: true}); }], ["Voltar", fecharCamada]]);
+      return;
+    }
+    telaDados(); return;
+  }
+  if (etapa === "dados") { enviar(); return; }
+  if (etapa === "resultado") pdf();
+}
+
+function telaDados() {
+  etapa = "dados";
+  $("nav").hidden = true;
+  document.querySelectorAll(".avancar").forEach(b => b.textContent = b.closest(".barra") ? "Ver resultado" : "Ver meu resultado");
+  $("prog").textContent = "Último passo";
+  const sel = (id, lista, ph) => `<select id="${id}"><option value="">${ph}</option>${lista.map(o => `<option ${dados[id] === o ? "selected" : ""}>${o}</option>`).join("")}</select>`;
+  $("main").innerHTML = `<section class="abertura"><h2>Falta pouco para ver o seu resultado</h2><p>Preencha os dados abaixo. Em seguida aparecem a sua faixa de autonomia, o gargalo do seu comercial e o primeiro passo, e você pode baixar tudo em PDF.</p></section>
+  <section class="dados" aria-label="Seus dados">
+    <div class="campo" id="c-nome"><label for="nome">Seu nome</label><input id="nome" autocomplete="name" value="${escapeHtml(dados.nome || "")}"></div>
+    <div class="campo" id="c-cargo"><label for="cargo">Cargo</label>${sel("cargo", CARGOS, "Escolha o seu cargo")}</div>
+    <div class="campo" id="c-empresa"><label for="empresa">Empresa</label><input id="empresa" autocomplete="organization" value="${escapeHtml(dados.empresa || "")}"></div>
+    <div class="campo" id="c-email"><label for="email">E-mail da empresa</label><input id="email" type="email" autocomplete="email" value="${escapeHtml(dados.email || "")}"></div>
+    <div class="campo" id="c-whatsapp"><label for="whatsapp">WhatsApp <span class="opcional">(opcional)</span></label><input id="whatsapp" type="tel" autocomplete="tel" placeholder="(48) 99999-9999" value="${escapeHtml(dados.whatsapp || "")}"></div>
+    <div class="campo" id="c-time"><label for="time">Tamanho do time comercial</label>${sel("time", TIMES, "Escolha uma opção")}</div>
+    <div class="campo" id="c-faturamento"><label for="faturamento">Faturamento da empresa</label>${sel("faturamento", FATURAMENTO, "Escolha uma opção")}</div>
+    <label class="consent" id="c-consent"><input type="checkbox" id="consent" ${dados.consent ? "checked" : ""}><span>Autorizo a Resolvedoria a usar estes dados para me mostrar o resultado e entrar em contato sobre ele. Os dados não são compartilhados com terceiros.</span></label>
+  </section>
+  <section class="fim"><button class="btn claro" type="button" id="voltar">Voltar às perguntas</button><button class="btn avancar" type="button">Ver meu resultado</button></section>`;
+  $("voltar").onclick = () => { telaPerguntas(); scrollTo(0, 0); };
+  scrollTo(0, 0); $("nome").focus();
+}
+
+function lerDados() {
+  for (const id of ["nome", "cargo", "empresa", "email", "whatsapp", "time", "faturamento"]) dados[id] = $(id).value.trim();
+  dados.consent = $("consent").checked;
+}
+async function enviar() {
+  lerDados(); guardar();
+  const erros = [];
+  if (!dados.nome) erros.push(["nome", "Preencha o seu nome."]);
+  if (!dados.cargo) erros.push(["cargo", "Escolha o seu cargo."]);
+  if (!dados.empresa) erros.push(["empresa", "Preencha o nome da empresa."]);
+  if (!emailValido(dados.email)) erros.push(["email", "Preencha um e-mail válido."]);
+  else if (!emailCorporativo(dados.email)) erros.push(["email", "Use o e-mail da empresa. E-mails gratuitos, como Gmail e Hotmail, não são aceitos."]);
+  if (!dados.time) erros.push(["time", "Escolha o tamanho do time comercial."]);
+  if (!dados.faturamento) erros.push(["faturamento", "Escolha a faixa de faturamento."]);
+  if (!dados.consent) erros.push(["consent", "Marque a autorização para ver o resultado."]);
+  ["nome", "cargo", "empresa", "email", "time", "faturamento", "consent"].forEach(c => $("c-" + c).classList.toggle("erro", erros.some(e => e[0] === c)));
+  if (erros.length) { aviso("Faltam alguns dados", erros.map(e => e[1]), [["Preencher agora", () => { fecharCamada(); const el = $(erros[0][0]); el.scrollIntoView({block: "center"}); el.focus({preventScroll: true}); }]]); return; }
+  if (!sb) { aviso("Não foi possível continuar", ["O teste ainda não está ligado ao banco de dados."], [["Fechar", fecharCamada]]); return; }
+  document.querySelectorAll(".avancar").forEach(b => b.disabled = true);
+  const g = gargalo();
+  const linha = {nome: dados.nome, cargo: dados.cargo, empresa: dados.empresa, email: dados.email, whatsapp: dados.whatsapp || null, time_comercial: dados.time, faturamento: dados.faturamento, respostas: r, pontos: pontos(), gargalo: g.d.id, origem: origem || null, consentimento: true};
+  let error = null;
+  try { ({error} = await sb.from("iac_leads").insert(linha)); } catch (err) { error = err; }
+  document.querySelectorAll(".avancar").forEach(b => b.disabled = false);
+  if (error) { aviso("Não foi possível continuar", ["A conexão falhou. Suas respostas continuam aqui; confira a internet e tente de novo."], [["Tentar de novo", () => { fecharCamada(); enviar(); }], ["Fechar", fecharCamada]]); return; }
+  salvo = Object.assign({}, dados);
+  try { localStorage.removeItem(RASCUNHO); } catch (e) {}
+  telaResultado();
+}
+
+function telaResultado() {
+  etapa = "resultado";
+  const p = pontos(), b = band(p), g = gargalo(), dims = porDim();
+  $("prog").textContent = "Seu resultado";
+  $("nav").hidden = true; $("barra").hidden = true;
+  document.querySelectorAll(".avancar").forEach(x => x.textContent = "Baixar em PDF");
+  $("dica-rail").textContent = "Guarde uma cópia do resultado.";
+  const primeiro = (salvo.nome || "").split(" ")[0];
+  const msg = encodeURIComponent(`Olá, João. Fiz o Teste de Autonomia Comercial e deu ${b.nome} (${p} de 100). Quero conversar sobre o resultado da ${salvo.empresa}.`);
+  $("main").innerHTML = `<section class="resultado">
+    <div class="res-topo"><small>${escapeHtml(primeiro)}, a ${escapeHtml(salvo.empresa)} está na faixa</small><h2>${b.nome}</h2>
+      <div class="regua" id="regua-r"><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="regua-lbl"><span>0</span><span>21</span><span>41</span><span>61</span><span>81</span></div>
+      <small><b style="color:var(--petroleo);font:700 20px var(--display)">${p}</b> de 100 pontos</small>
+      <p>${LEITURA[b.idx]}</p></div>
+    <div class="bloco"><h3>Onde o seu comercial mais depende de você</h3>
+      <div class="barras">${dims.map(x => `<div class="${x.d.id === g.d.id ? "g" : ""}"><span>${x.d.nome}</span><i><b style="width:${x.pts / x.max * 100}%"></b></i><span class="v">${x.pts}/${x.max}</span></div>`).join("")}</div></div>
+    <div class="bloco"><h3>Primeiro passo: ${g.d.nome.toLowerCase()}</h3><p>${PASSO[g.d.id]}</p></div>
+    <div class="convite"><h3>Quer ajuda para sair dessa faixa?</h3><p>Em 20 minutos, eu leio o resultado com você e mostro por onde começar na ${escapeHtml(salvo.empresa)}. Sem custo.</p>
+      <div class="acoes"><a class="btn" href="https://wa.me/${WHATS}?text=${msg}" target="_blank" rel="noopener">Marcar a conversa pelo WhatsApp</a><button class="btn claro avancar" type="button">Baixar em PDF</button></div></div>
+  </section>`;
+  paintRegua($("regua-r"), p, true);
+  scrollTo(0, 0);
+}
+
+function pdf() {
+  const p = pontos(), b = band(p), g = gargalo(), i = b.idx;
+  const regua = [0,1,2,3,4].map(j => `<i class="${j <= i ? "on" : ""}"></i>`).join("");
+  let n = 0;
+  const resp = porDim().map(x => `<section><h2>${x.d.nome}</h2><table>${x.ks.map(k => { n++; const v = r[k]; return `<tr><td class="n">${n}</td><td><strong>${escapeHtml(tu(CRIT[k].t))}</strong><p class="ev"><em>Nota ${v.nota}: ${escapeHtml(tu(CRIT[k].o[v.nota]))}</em></p></td></tr>`; }).join("")}</table></section>`).join("");
+  const html = `<article class="folha"><header><div class="logo">${logoSvg(40, "#123A40")}<div><strong>Resolvedoria</strong><span>Teste de Autonomia Comercial</span></div></div><div class="meta"><b>${escapeHtml(salvo.empresa)}</b>${escapeHtml(salvo.nome)}, ${escapeHtml(salvo.cargo)}<br>${fmtDia(new Date())}</div></header>
+  <section class="res"><div><small>Faixa</small><h1>${b.nome}</h1><div class="regua" style="margin-top:14px">${regua}</div><div class="regua-lbl"><span>0</span><span>21</span><span>41</span><span>61</span><span>81</span></div></div><div class="pts">${p}<br><span>de 100 pontos</span></div></section>
+  <section><p style="font-size:14px;margin:0">${LEITURA[i]}</p></section>
+  <section><h2>Por dimensão</h2><table><tr><th>Dimensão</th><th>Pontos</th></tr>${porDim().map(x => `<tr><td>${x.d.nome}${x.d.id === g.d.id ? " (gargalo)" : ""}</td><td class="n">${x.pts}/${x.max}</td></tr>`).join("")}</table></section>
+  <section><h2>Primeiro passo: ${g.d.nome.toLowerCase()}</h2><p style="font-size:14px;margin:0">${PASSO[g.d.id]}</p></section>
+  ${resp}
+  <footer><span>Resolvedoria, destravamento comercial. Conversa sobre o resultado: WhatsApp (48) 99900-4726</span><span>linkedin.com/in/joaomateusdarosa</span></footer></article>`;
+  abrirCamada(`<div class="folha-wrap"><div class="folha-top"><span>Na janela que vai abrir, escolha "Salvar como PDF".</span><button class="btn claro pequeno" type="button" data-fechar style="color:#fff;border-color:rgba(255,255,255,.5)">Fechar</button></div>${html}</div>`);
+  setTimeout(() => window.print(), 150);
+}
+
+document.addEventListener("click", e => {
+  if (e.target.closest(".avancar")) { avancar(); return; }
+  const b = e.target.closest(".opts button"); if (!b || etapa !== "perguntas") return;
+  r[b.dataset.k] = {nota: +b.dataset.s};
+  b.closest(".opts").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  const sec = b.closest(".dim"); const x = porDim().find(y => "d-" + y.d.id === sec.id); sec.querySelector("header span").textContent = `${x.ks.filter(k => r[k]).length} de ${x.ks.length}`;
+  renderNav(); fim(); guardar();
+});
+document.addEventListener("input", e => { const c = e.target.closest(".campo, .consent"); if (c) c.classList.remove("erro"); if (etapa === "dados") { lerDados(); guardar(); } });
+document.addEventListener("change", e => { const c = e.target.closest(".campo, .consent"); if (c) c.classList.remove("erro"); if (etapa === "dados") { lerDados(); guardar(); } });
+carregar(); telaPerguntas();
+</script>
+</body>
+</html>

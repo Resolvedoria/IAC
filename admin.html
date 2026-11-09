@@ -7,7 +7,7 @@
 <title>Painel do mentor · IAC</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 34 34'%3E%3Crect width='34' height='34' rx='6' fill='%23123A40'/%3E%3Crect x='4' y='6' width='26' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='7' y='12' width='20' height='4' rx='2' fill='%23F4F6F5'/%3E%3Crect x='10' y='18' width='14' height='4' rx='2' fill='%23E09A12'/%3E%3Crect x='13' y='24' width='8' height='4' rx='2' fill='%23F4F6F5'/%3E%3C/svg%3E">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
-<link rel="stylesheet" href="estilo.css?v=3">
+<link rel="stylesheet" href="estilo.css?v=4">
 </head>
 <body>
 
@@ -40,6 +40,7 @@
       <div class="envios" id="envios"></div>
     </div>
     <div class="acoes-rail">
+      <a class="btn claro pequeno" href="leads.html" style="color:var(--rail-fg);border-color:var(--rail-linha);text-decoration:none">Leads do teste</a>
       <button class="btn claro pequeno" id="reload" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Atualizar</button>
       <button class="btn claro pequeno" id="sair" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Sair</button>
     </div>
@@ -70,9 +71,9 @@
   </main>
 </div>
 
-<script src="config.js?v=3"></script>
+<script src="config.js?v=4"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
-<script src="iac.js?v=3"></script>
+<script src="iac.js?v=4"></script>
 <script>
 const $ = id => document.getElementById(id);
 const sb = getClient();

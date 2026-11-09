@@ -58,3 +58,33 @@ grant execute on function public.iac_is_admin() to anon, authenticated;
 alter table public.iac_respostas
   add column if not exists nome text check (char_length(nome) <= 200),
   add column if not exists cargo text check (char_length(cargo) <= 100);
+
+-- 09/11/2026: leads do Teste de Autonomia Comercial (isca de prospecção).
+create table if not exists public.iac_leads (
+  id uuid primary key default gen_random_uuid(),
+  criado_em timestamptz not null default now(),
+  nome text not null check (char_length(nome) between 1 and 200),
+  cargo text not null check (char_length(cargo) <= 100),
+  empresa text not null check (char_length(empresa) between 1 and 200),
+  email text not null check (char_length(email) between 3 and 200),
+  whatsapp text check (char_length(whatsapp) <= 40),
+  time_comercial text check (char_length(time_comercial) <= 40),
+  faturamento text check (char_length(faturamento) <= 40),
+  respostas jsonb not null,
+  pontos int check (pontos between 0 and 100),
+  gargalo text check (char_length(gargalo) <= 40),
+  origem text check (char_length(origem) <= 60),
+  consentimento boolean not null check (consentimento),
+  contatado boolean not null default false
+);
+alter table public.iac_leads enable row level security;
+drop policy if exists "lead envia" on public.iac_leads;
+create policy "lead envia" on public.iac_leads for insert to anon, authenticated with check (contatado = false);
+drop policy if exists "admin leads" on public.iac_leads;
+create policy "admin leads" on public.iac_leads for select to authenticated using (public.iac_is_admin());
+drop policy if exists "admin altera leads" on public.iac_leads;
+create policy "admin altera leads" on public.iac_leads for update to authenticated using (public.iac_is_admin()) with check (public.iac_is_admin());
+drop policy if exists "admin apaga leads" on public.iac_leads;
+create policy "admin apaga leads" on public.iac_leads for delete to authenticated using (public.iac_is_admin());
+grant insert on public.iac_leads to anon, authenticated;
+grant select, update, delete on public.iac_leads to authenticated;

@@ -74,7 +74,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .enviar small { color: var(--rail-2); font-size: 13px; }
 
 /* Coluna das perguntas */
-main { padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); padding-right: max(clamp(24px, 4.5vw, 72px), env(safe-area-inset-right, 0px)); width: 100%; max-width: 920px; margin-inline: auto; display: grid; gap: 56px; min-width: 0; }
+main { align-content: start; padding-block: 48px 120px; padding-left: clamp(32px, 4.5vw, 72px); padding-right: max(clamp(24px, 4.5vw, 72px), env(safe-area-inset-right, 0px)); width: 100%; max-width: 920px; margin-inline: auto; display: grid; gap: 56px; min-width: 0; }
 .abertura h2 { font: 700 34px/1.12 var(--display); letter-spacing: -0.01em; margin: 0 0 14px; text-wrap: balance; max-width: 20ch; }
 .abertura p { margin: 0; color: var(--texto-2); max-width: 60ch; font-size: 17px; }
 

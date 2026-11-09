@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Leads do teste · Resolvedoria</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=Instrument+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="estilo.css?v=4">
+<style>
+.filtros { display: flex; gap: 10px; flex-wrap: wrap; }
+.filtros button { border: 1px solid var(--rail-linha); background: transparent; color: var(--rail-fg); border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: 14px; }
+.filtros button[aria-pressed="true"] { background: var(--rail-fg); color: var(--rail-bg); }
+.numeros { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.numeros div { display: grid; }
+.numeros b { font: 800 34px/1 var(--display); }
+.numeros span { color: var(--rail-2); font-size: 14px; }
+.lead { border: 1px solid var(--linha); border-radius: 8px; padding: 18px 20px; display: grid; gap: 10px; }
+.lead.feito { opacity: .6; }
+.lead header { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; align-items: baseline; }
+.lead h3 { font: 700 20px/1.2 var(--display); margin: 0; }
+.lead h3 span { font: 400 15px var(--corpo); color: var(--texto-2); }
+.lead .faixa-l { font-weight: 600; }
+.lead .linha { display: flex; gap: 8px 18px; flex-wrap: wrap; font-size: 15px; color: var(--texto-2); }
+.lead .linha a { color: var(--petroleo); }
+.selo.perfil { background: var(--agua-claro); color: var(--petroleo); }
+.selo.fora { background: var(--nevoa); }
+.lead .acoes { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; font-size: 15px; }
+.lead .acoes label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+.lead .acoes input { width: 18px; height: 18px; accent-color: var(--petroleo); }
+.lead details summary { cursor: pointer; color: var(--texto-2); font-size: 15px; }
+.lead details ol { margin: 10px 0 0; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; }
+.lead details em { display: block; color: var(--texto-2); }
+</style>
+</head>
+<body>
+<form class="entrar" id="login" hidden>
+  <div class="logo-entrar" id="logo-l"></div>
+  <h1>Leads do teste</h1>
+  <div class="campo"><label for="lemail">E-mail</label><input type="email" id="lemail" autocomplete="username" required></div>
+  <div class="campo"><label for="lsenha">Senha</label><input type="password" id="lsenha" autocomplete="current-password" required></div>
+  <button class="btn" type="submit">Entrar</button>
+  <div class="msg" id="lmsg"></div>
+</form>
+
+<div class="shell painel" id="painel" hidden>
+  <aside class="rail">
+    <div class="marca"><span id="logo"></span><strong>Resolvedoria</strong><span style="font-size:14px;color:var(--rail-2)">Leads do teste</span></div>
+    <div class="numeros"><div><b id="n-total">0</b><span>leads no total</span></div><div><b id="n-perfil">0</b><span>no perfil</span></div><div><b id="n-aberto">0</b><span>sem contato</span></div><div><b id="n-semana">0</b><span>nos últimos 7 dias</span></div></div>
+    <div><div style="font-size:14px;color:var(--rail-2);margin-bottom:8px">Mostrar</div>
+      <div class="filtros" id="filtros"><button type="button" data-f="todos" aria-pressed="true">Todos</button><button type="button" data-f="perfil" aria-pressed="false">No perfil</button><button type="button" data-f="aberto" aria-pressed="false">Sem contato</button></div></div>
+    <div class="acoes-rail">
+      <button class="btn claro pequeno" id="csv" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Exportar planilha</button>
+      <a class="btn claro pequeno" href="admin.html" style="color:var(--rail-fg);border-color:var(--rail-linha);text-decoration:none">Painel da mentoria</a>
+      <button class="btn claro pequeno" id="sair" type="button" style="color:var(--rail-fg);border-color:var(--rail-linha)">Sair</button>
+    </div>
+  </aside>
+  <main>
+    <div class="msg" id="msg"></div>
+    <section class="abertura"><h2>Leads do Teste de Autonomia Comercial</h2><p>No perfil: time comercial de 3 a 15 pessoas e faturamento entre R$ 1 e 20 milhões por ano. Marque o contato depois de falar com a pessoa.</p></section>
+    <div id="lista" style="display:grid;gap:14px"></div>
+  </main>
+</div>
+
+<script src="config.js?v=4"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="iac.js?v=4"></script>
+<script>
+const $ = id => document.getElementById(id);
+const sb = getClient();
+const ISCA = ["processos_1","processos_4","indicadores_1","indicadores_2","pessoas_1","pessoas_3","decisoes_3","decisoes_4","governanca_2","governanca_4"];
+const CRIT = Object.fromEntries(DIMS.flatMap(d => d.c.map((c, i) => [d.id + "_" + (i + 1), c])));
+const NOMEDIM = Object.fromEntries(DIMS.map(d => [d.id, d.nome]));
+let leads = [], filtro = "todos";
+$("logo").innerHTML = logoSvg(46); $("logo-l").innerHTML = logoSvg(48, "var(--petroleo)");
+const noPerfil = l => ["3 a 5 pessoas", "6 a 15 pessoas"].includes(l.time_comercial) && ["De R$ 1 a 5 milhões", "De R$ 5 a 20 milhões"].includes(l.faturamento);
+const wa = n => { const d = (n || "").replace(/\D/g, ""); return d ? (d.length <= 11 ? "55" + d : d) : ""; };
+
+async function boot() {
+  if (!sb) { $("login").hidden = false; $("lmsg").textContent = "Configure o config.js."; return; }
+  const {data} = await sb.auth.getSession();
+  if (data.session) mostrar(); else $("login").hidden = false;
+}
+$("login").onsubmit = async e => { e.preventDefault(); const {error} = await sb.auth.signInWithPassword({email: $("lemail").value.trim(), password: $("lsenha").value}); if (error) { $("lmsg").textContent = "E-mail ou senha incorretos."; return; } $("login").hidden = true; mostrar(); };
+$("sair").onclick = async () => { await sb.auth.signOut(); location.reload(); };
+async function mostrar() {
+  $("painel").hidden = false;
+  let res; try { res = await sb.from("iac_leads").select("*").order("criado_em", {ascending: false}); } catch (e) { $("msg").textContent = "Sem conexão com o banco de dados."; return; }
+  if (res.error) { $("msg").textContent = "Não foi possível carregar os leads. Confira se você entrou com o e-mail de administrador."; return; }
+  leads = res.data; render();
+}
+function render() {
+  const semana = Date.now() - 7 * 864e5;
+  $("n-total").textContent = leads.length; $("n-perfil").textContent = leads.filter(noPerfil).length;
+  $("n-aberto").textContent = leads.filter(l => !l.contatado).length; $("n-semana").textContent = leads.filter(l => new Date(l.criado_em) > semana).length;
+  const vis = leads.filter(l => filtro === "todos" || (filtro === "perfil" && noPerfil(l)) || (filtro === "aberto" && !l.contatado));
+  $("lista").innerHTML = vis.map(l => {
+    const b = band(l.pontos || 0), w = wa(l.whatsapp);
+    return `<article class="lead ${l.contatado ? "feito" : ""}"><header><h3>${escapeHtml(l.nome)} <span>${escapeHtml(l.cargo)}, ${escapeHtml(l.empresa)}</span></h3><span class="selo ${noPerfil(l) ? "perfil" : "fora"}">${noPerfil(l) ? "No perfil" : "Fora do perfil"}</span></header>
+      <div class="linha"><span class="faixa-l" style="color:var(--petroleo)">${b.nome}, ${l.pontos} pontos</span><span>Gargalo: ${NOMEDIM[l.gargalo] || "–"}</span><span>${escapeHtml(l.time_comercial || "–")}</span><span>${escapeHtml(l.faturamento || "–")}</span></div>
+      <div class="linha"><a href="mailto:${escapeHtml(l.email)}">${escapeHtml(l.email)}</a>${w ? `<a href="https://wa.me/${w}" target="_blank" rel="noopener">WhatsApp ${escapeHtml(l.whatsapp)}</a>` : ""}<span>${fmtDate(l.criado_em)}</span>${l.origem ? `<span>Origem: ${escapeHtml(l.origem)}</span>` : ""}</div>
+      <div class="acoes"><label><input type="checkbox" data-id="${l.id}" ${l.contatado ? "checked" : ""}> Já fiz contato</label></div>
+      <details><summary>Ver respostas</summary><ol>${ISCA.map(k => { const v = (l.respostas || {})[k]; return `<li>${escapeHtml(CRIT[k].t)}<em>Nota ${v ? v.nota : "–"}${v ? ": " + escapeHtml(CRIT[k].o[v.nota]) : ""}</em></li>`; }).join("")}</ol></details></article>`;
+  }).join("") || `<p class="vazio">Nenhum lead ${filtro === "todos" ? "ainda. Quando alguém fizer o teste, aparece aqui." : "neste filtro."}</p>`;
+}
+document.addEventListener("click", e => { const f = e.target.closest("[data-f]"); if (!f) return; filtro = f.dataset.f; document.querySelectorAll("[data-f]").forEach(b => b.setAttribute("aria-pressed", b === f)); render(); });
+document.addEventListener("change", async e => {
+  const c = e.target.closest("input[data-id]"); if (!c) return;
+  const l = leads.find(x => x.id === c.dataset.id); const antes = l.contatado; l.contatado = c.checked;
+  const {error} = await sb.from("iac_leads").update({contatado: c.checked}).eq("id", l.id);
+  if (error) { l.contatado = antes; $("msg").textContent = "Não foi possível salvar. Tente de novo."; }
+  render();
+});
+$("csv").onclick = () => {
+  const cols = ["criado_em","nome","cargo","empresa","email","whatsapp","time_comercial","faturamento","pontos","gargalo","origem","contatado"];
+  const esc = v => `"${String(v == null ? "" : v).replace(/"/g, '""')}"`;
+  const linhas = [cols.concat(["faixa","no_perfil"]).join(";")].concat(leads.map(l => cols.map(c => esc(c === "gargalo" ? NOMEDIM[l[c]] : l[c])).concat([esc(band(l.pontos || 0).nome), esc(noPerfil(l) ? "sim" : "não")]).join(";")));
+  const blob = new Blob(["﻿" + linhas.join("\n")], {type: "text/csv;charset=utf-8"});
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "leads-teste-autonomia.csv"; a.click();
+};
+boot();
+</script>
+</body>
+</html>
